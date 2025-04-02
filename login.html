@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div id="message" class="auth-message"></div>
+        <span class="text-link" onclick="window.location.href='register.html'">Don't have an account? Register</span>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.hostname.includes("localhost")
+            ? "http://localhost:7044/api/auth"
+            : "https://your-render-backend.onrender.com/api/auth";
+
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const messageEl = document.getElementById("message");
+            messageEl.innerText = "";
+            messageEl.className = "auth-message";
+
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageEl.classList.add("success");
+                    messageEl.innerText = "Login successful! Redirecting...";
+                    setTimeout(() => window.location.href = "dashboard.html", 1000);
+                } else {
+                    throw new Error(data.message || "Login failed");
+                }
+            } catch (error) {
+                messageEl.classList.add("error");
+                messageEl.innerText = error.message;
+            }
+        });
+    </script>
+</body>
+</html>

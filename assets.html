@@ -1,0 +1,423 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Assets</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preload" href="placeholder.jpg" as="image">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">
+            Game Asset Storage
+            <span class="admin-badge" id="adminBadge" style="display: none;">Admin</span>
+        </div>
+        <div class="menu">
+            <a href="dashboard.html" class="home-btn">Home</a>
+            <a href="assets.html" class="assets-link">Assets</a>
+            <a href="admin.html" class="admin-link" id="adminLink" style="display: none;">Admin Panel</a>
+        </div>
+        <button id="logout-btn" class="logout-btn" style="display: none;">Logout</button>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <h2>Game Assets</h2>
+
+            <!-- Category Navigation -->
+            <div class="category-nav">
+                <a href="#" class="category-btn active" onclick="showCategory('characters', this)">Characters</a>
+                <a href="#" class="category-btn" onclick="showCategory('environment', this)">Environment</a>
+                <a href="#" class="category-btn" onclick="showCategory('soundtracks', this)">Soundtracks</a>
+            </div>
+
+            <input type="text" id="searchBar" placeholder="Search assets..." onkeyup="searchAssets()">
+
+            <!-- Character Assets -->
+            <div class="asset-section active" id="characters-section">
+                <div class="assets-grid" id="characters"></div>
+            </div>
+
+            <!-- Environment Assets -->
+            <div class="asset-section" id="environment-section">
+                <div class="assets-grid" id="environment"></div>
+            </div>
+
+            <!-- Soundtrack Assets -->
+            <div class="asset-section" id="soundtracks-section">
+                <div class="assets-grid" id="soundtracks"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Toggle Button -->
+    <button class="upload-toggle" onclick="toggleUploadPanel()">+ Upload Asset</button>
+
+    <!-- Upload Panel -->
+    <div class="upload-panel" id="uploadPanel" style="display: none;">
+        <h3>Upload New Asset</h3>
+        <form class="upload-form" id="uploadForm">
+            <input type="text" id="assetName" placeholder="Asset Name" required>
+            <select id="assetCategory" required>
+                <option value="">Select Category</option>
+                <option value="characters">Character</option>
+                <option value="environment">Environment</option>
+                <option value="soundtracks">Soundtrack</option>
+            </select>
+            <textarea id="assetDescription" placeholder="Description"></textarea>
+            <div class="file-upload">
+                <label for="assetFile">Choose File:</label>
+                <input type="file" id="assetFile" required>
+            </div>
+            <input type="text" id="assetImage" placeholder="Preview Image URL">
+            <button type="submit">Upload Asset</button>
+        </form>
+    </div>
+
+    <!-- Asset Detail Modal -->
+    <div id="assetModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="asset-viewer">
+                <div class="asset-gallery">
+                    <img id="mainAssetImage" src="" alt="">
+                    <div class="thumbnails"></div>
+                </div>
+                <div class="asset-comments">
+                    <h3>Comments</h3>
+                    <div class="comments-list"></div>
+                    <textarea placeholder="Add comment..." id="newComment"></textarea>
+                    <button onclick="postComment()">Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Generate user ID if not exists
+        if (!localStorage.getItem('userId')) {
+            localStorage.setItem('userId', Math.random().toString(36).substr(2, 9));
+        }
+
+        // Enhanced assets data
+        let assets = [
+            {
+                id: 1,
+                name: "Warrior",
+                category: "characters",
+                image: "warrior.jpg",
+                variations: ["warrior_alt1.jpg", "warrior_alt2.jpg"],
+                description: "A strong fighter",
+                file: "warrior.zip",
+                comments: [],
+                favorites: 0,
+                addedDate: new Date().toISOString()
+            },
+            {
+                id: 2,
+                name: "Mage",
+                category: "characters",
+                image: "mage.jpg",
+                variations: ["mage_alt1.jpg"],
+                description: "A powerful magician",
+                file: "mage.zip",
+                comments: [],
+                favorites: 0,
+                addedDate: new Date(Date.now() - 86400000).toISOString()
+            },
+            {
+                id: 3,
+                name: "Forest Texture",
+                category: "environment",
+                image: "forest.jpg",
+                variations: ["forest_detail.jpg", "forest_night.jpg"],
+                description: "High-res forest texture",
+                file: "forest_texture.zip",
+                comments: [],
+                favorites: 0,
+                addedDate: new Date(Date.now() - 172800000).toISOString()
+            },
+            {
+                id: 4,
+                name: "Desert Texture",
+                category: "environment",
+                image: "desert.jpg",
+                variations: ["desert_sandstorm.jpg"],
+                description: "Sandy desert terrain",
+                file: "desert_texture.zip",
+                comments: [],
+                favorites: 0,
+                addedDate: new Date(Date.now() - 259200000).toISOString()
+            },
+            {
+                id: 5,
+                name: "Epic Battle Music",
+                category: "soundtracks",
+                image: "music.jpg",
+                variations: [],
+                description: "Intense orchestral track",
+                file: "epic_music.mp3",
+                comments: [],
+                favorites: 0,
+                addedDate: new Date(Date.now() - 345600000).toISOString()
+            }
+        ];
+
+        // Current viewed asset
+        let currentAssetId = null;
+
+        // Load saved data
+        function loadAssetData() {
+            const saved = localStorage.getItem('assetData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                assets.forEach(asset => {
+                    const savedAsset = data.find(a => a.id === asset.id);
+                    if (savedAsset) {
+                        asset.favorites = savedAsset.favorites || 0;
+                        asset.comments = savedAsset.comments || [];
+                    }
+                });
+            }
+        }
+
+        // Save data
+        function saveAssetData() {
+            const dataToSave = assets.map(a => ({
+                id: a.id,
+                favorites: a.favorites,
+                comments: a.comments
+            }));
+            localStorage.setItem('assetData', JSON.stringify(dataToSave));
+        }
+
+        // Toggle favorite
+        function toggleFavorite(assetId, event) {
+            if (event) event.stopPropagation();
+
+            const asset = assets.find(a => a.id === assetId);
+            const favKey = `fav_${assetId}_${localStorage.getItem('userId')}`;
+
+            if (localStorage.getItem(favKey)) {
+                // Remove favorite
+                localStorage.removeItem(favKey);
+                asset.favorites--;
+            } else {
+                // Add favorite
+                localStorage.setItem(favKey, '1');
+                asset.favorites++;
+            }
+
+            saveAssetData();
+            displayAssets();
+        }
+
+        // Display all assets
+        function displayAssets() {
+            const grids = {
+                characters: document.getElementById('characters'),
+                environment: document.getElementById('environment'),
+                soundtracks: document.getElementById('soundtracks')
+            };
+
+            // Clear all grids first
+            Object.values(grids).forEach(grid => {
+                grid.innerHTML = '';
+            });
+
+            // Create asset cards
+            assets.forEach(asset => {
+                const card = document.createElement('div');
+                card.className = 'asset-card';
+                card.innerHTML = `
+                        <button class="favorite-btn ${localStorage.getItem(`fav_${asset.id}_${localStorage.getItem('userId')}`) ? 'active' : ''}"
+                                onclick="toggleFavorite(${asset.id}, event)">
+                            ♥ <span class="favorite-count">${asset.favorites || 0}</span>
+                        </button>
+                        <img src="${asset.image}" alt="${asset.name}" loading="lazy" onerror="this.src='placeholder.jpg'">
+                        <h4>${asset.name}</h4>
+                        <p>${asset.description}</p>
+                        <a href="${asset.file}" download class="download-btn">Download</a>
+                    `;
+                card.onclick = () => openAssetModal(asset.id);
+
+                document.getElementById(asset.category).appendChild(card);
+            });
+        }
+
+        // Open asset modal
+        function openAssetModal(assetId) {
+            const asset = assets.find(a => a.id === assetId);
+            currentAssetId = assetId;
+
+            // Set main image
+            const mainImg = document.getElementById('mainAssetImage');
+            mainImg.src = asset.image;
+            mainImg.alt = asset.name;
+
+            // Create thumbnails
+            const thumbsContainer = document.querySelector('.thumbnails');
+            thumbsContainer.innerHTML = '';
+
+            // Add main image as first thumbnail
+            addThumbnail(asset.image, asset.name);
+
+            // Add variations
+            asset.variations.forEach(variation => {
+                addThumbnail(variation, `${asset.name} variation`);
+            });
+
+            // Load comments
+            renderComments(asset.comments);
+
+            // Show modal
+            document.getElementById('assetModal').style.display = 'block';
+        }
+
+        function addThumbnail(src, alt) {
+            const thumbsContainer = document.querySelector('.thumbnails');
+            const thumb = document.createElement('img');
+            thumb.src = src;
+            thumb.alt = alt;
+            thumb.onclick = () => {
+                document.getElementById('mainAssetImage').src = src;
+            };
+            thumbsContainer.appendChild(thumb);
+        }
+
+        function renderComments(comments) {
+            const container = document.querySelector('.comments-list');
+            container.innerHTML = comments.map(comment => `
+                    <div class="comment">
+                        <div class="comment-author">${comment.author}</div>
+                        <div class="comment-date">${new Date(comment.date).toLocaleString()}</div>
+                        <p>${comment.text}</p>
+                    </div>
+                `).join('');
+        }
+
+        function postComment() {
+            const text = document.getElementById('newComment').value.trim();
+            if (!text || !currentAssetId) return;
+
+            const asset = assets.find(a => a.id === currentAssetId);
+            const username = localStorage.getItem('username') || 'Anonymous';
+
+            const newComment = {
+                author: username,
+                date: new Date().toISOString(),
+                text: text
+            };
+
+            asset.comments.push(newComment);
+            renderComments(asset.comments);
+            saveAssetData();
+            document.getElementById('newComment').value = '';
+        }
+
+        // Close modal
+        document.querySelector('.close').onclick = function () {
+            document.getElementById('assetModal').style.display = 'none';
+        };
+
+        // Close when clicking outside modal
+        window.onclick = function (event) {
+            const modal = document.getElementById('assetModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // Toggle upload panel
+        function toggleUploadPanel() {
+            const panel = document.getElementById('uploadPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Show selected category
+        function showCategory(category, clickedElement) {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            clickedElement.classList.add('active');
+
+            document.querySelectorAll('.asset-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${category}-section`).classList.add('active');
+
+            document.getElementById('searchBar').value = '';
+            searchAssets();
+        }
+
+        // Search functionality
+        function searchAssets() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const activeGrid = document.querySelector('.asset-section.active .assets-grid');
+
+            if (activeGrid) {
+                activeGrid.querySelectorAll('.asset-card').forEach(card => {
+                    const assetName = card.querySelector('h4').textContent.toLowerCase();
+                    card.style.display = assetName.includes(query) ? 'flex' : 'none';
+                });
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('assetFile');
+            if (fileInput.files.length === 0) {
+                alert('Please select a file to upload');
+                return;
+            }
+
+            const newAsset = {
+                id: Date.now().toString(),
+                name: document.getElementById('assetName').value,
+                category: document.getElementById('assetCategory').value,
+                image: document.getElementById('assetImage').value || 'placeholder.jpg',
+                variations: [],
+                description: document.getElementById('assetDescription').value,
+                file: URL.createObjectURL(fileInput.files[0]),
+                comments: [],
+                favorites: 0,
+                addedDate: new Date().toISOString(),
+                status: 'pending',
+                uploadedBy: localStorage.getItem('userId')
+            };
+
+            // Add to pending assets
+            let pendingAssets = JSON.parse(localStorage.getItem('pendingAssets') || '[]');
+            pendingAssets.push(newAsset);
+            localStorage.setItem('pendingAssets', JSON.stringify(pendingAssets));
+
+            this.reset();
+            toggleUploadPanel();
+            alert('Asset submitted for admin approval!');
+        });
+
+        // Initialize page
+        window.onload = function () {
+            loadAssetData();
+            displayAssets();
+
+            const token = localStorage.getItem('token');
+            if (token && token !== "placeholder_token") {
+                document.getElementById('logout-btn').style.display = "block";
+            }
+        };
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', function () {
+            localStorage.clear();
+            window.location.href = "login.html";
+        });
+    </script>
+</body>
+</html>
