@@ -8,6 +8,13 @@ body {
     background-color: #f4f4f4;
 }
 
+/* Add this right here */
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important; /* Prevents hover animations on disabled state */
+}
+
 /* =====================
    AUTHENTICATION PAGES
    (Your original login/register styles)
