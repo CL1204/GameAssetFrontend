@@ -20,16 +20,18 @@
     </div>
 
     <script>
-        const API_BASE_URL = import.meta.env.VITE_API_URL ||
-            (window.location.hostname.includes("localhost")
-                ? "http://localhost:7044/api/auth"
-                : "https://your-render-backend.onrender.com/api/auth");
+        const API_BASE_URL = window.location.hostname.includes("localhost")
+            ? "http://localhost:7044/api/auth"
+            : "https://gameasset-backend-aj1g.onrender.com/api/auth";
 
         document.getElementById("registerForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const messageEl = document.getElementById("message");
             const button = document.getElementById("registerButton");
 
+            // Double-submit protection
+            if (button.disabled) return;
+
+            const messageEl = document.getElementById("message");
             messageEl.innerText = "";
             messageEl.className = "auth-message";
             button.disabled = true;
@@ -40,7 +42,6 @@
             const confirmPassword = document.getElementById("confirmPassword").value;
 
             try {
-                // Client-side validation
                 if (password !== confirmPassword) {
                     throw new Error("Passwords do not match");
                 }
@@ -66,15 +67,9 @@
                 messageEl.innerText = error.message;
                 button.disabled = false;
                 button.textContent = "Register";
-            } finally {
-                if (!document.getElementById("message").classList.contains("success")) {
-                    button.disabled = false;
-                    button.textContent = "Register";
-                }
             }
         });
 
-        // Live password matching check
         document.getElementById("confirmPassword").addEventListener("input", function () {
             const password = document.getElementById("password").value;
             const confirmPassword = this.value;

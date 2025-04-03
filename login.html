@@ -19,10 +19,9 @@
     </div>
 
     <script>
-        const API_BASE_URL = import.meta.env.VITE_API_URL ||
-            (window.location.hostname.includes("localhost")
-                ? "http://localhost:7044/api/auth"
-                : "https://your-render-backend.onrender.com/api/auth");
+        const API_BASE_URL = window.location.hostname.includes("localhost")
+            ? "http://localhost:7044/api/auth"
+            : "https://gameasset-backend-aj1g.onrender.com/api/auth";
 
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
