@@ -44,7 +44,13 @@
                     body: JSON.stringify({ username, password })
                 });
 
-                const data = await response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch {
+                    const text = await response.text(); // fallback if not JSON
+                    throw new Error(text || "Unknown error");
+                }
 
                 if (response.ok) {
                     messageEl.classList.add("success");
@@ -53,6 +59,7 @@
                 } else {
                     throw new Error(data.message || "Login failed");
                 }
+            
             } catch (error) {
                 messageEl.classList.add("error");
                 messageEl.innerText = error.message;
