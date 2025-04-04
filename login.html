@@ -48,28 +48,21 @@
                 try {
                     data = await response.json();
                 } catch {
-                    const text = await response.text(); // fallback if not JSON
-                    throw new Error(text || "Unknown error");
+                    const rawText = await response.text();
+                    throw new Error(rawText || "Failed to parse response");
                 }
 
-                if (response.ok) {
-                    messageEl.classList.add("success");
-                    messageEl.innerText = "Login successful! Redirecting...";
-                    setTimeout(() => window.location.href = "dashboard.html", 1000);
-                } else {
-                    throw new Error(data.message || "Login failed");
-                }
-            
-            } catch (error) {
+                if (!response.ok) throw new Error(data.message || "Login failed");
+
+                messageEl.classList.add("success");
+                messageEl.innerText = "Login successful! Redirecting...";
+                setTimeout(() => window.location.href = "dashboard.html", 1000);
+            } catch (err) {
                 messageEl.classList.add("error");
-                messageEl.innerText = error.message;
+                messageEl.innerText = err.message;
+            } finally {
                 button.disabled = false;
                 button.textContent = "Login";
-            } finally {
-                if (!document.getElementById("message").classList.contains("success")) {
-                    button.disabled = false;
-                    button.textContent = "Login";
-                }
             }
         });
 
