@@ -54,25 +54,28 @@
                 });
 
                 let data;
-                try {
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
                     data = await response.json();
-                } catch {
+                } else {
                     const raw = await response.text();
-                    throw new Error(raw || "Registration error");
+                    throw new Error(raw || "Registration failed");
                 }
 
-                if (!response.ok) throw new Error(data.message || "Registration failed");
-
-                messageEl.classList.add("success");
-                messageEl.innerText = "Registration successful! Redirecting...";
-                setTimeout(() => window.location.href = "login.html", 1500);
+                if (response.ok) {
+                    messageEl.classList.add("success");
+                    messageEl.innerText = "Registration successful! Redirecting...";
+                    setTimeout(() => window.location.href = "login.html", 1500);
+                } else {
+                    throw new Error(data.message || "Registration failed");
+                }
             } catch (error) {
                 messageEl.classList.add("error");
                 messageEl.innerText = error.message;
-            } finally {
                 button.disabled = false;
                 button.textContent = "Register";
             }
+
         });
 
         document.getElementById("confirmPassword").addEventListener("input", function () {

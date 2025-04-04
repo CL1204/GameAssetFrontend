@@ -45,25 +45,29 @@
                 });
 
                 let data;
-                try {
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
                     data = await response.json();
-                } catch {
-                    const rawText = await response.text();
-                    throw new Error(rawText || "Failed to parse response");
+                } else {
+                    const raw = await response.text();
+                    throw new Error(raw || "Login failed");
                 }
 
-                if (!response.ok) throw new Error(data.message || "Login failed");
+                if (response.ok) {
+                    messageEl.classList.add("success");
+                    messageEl.innerText = "Login successful! Redirecting...";
+                    setTimeout(() => window.location.href = "dashboard.html", 1000);
+                } else {
+                    throw new Error(data.message || "Login failed");
+                }
 
-                messageEl.classList.add("success");
-                messageEl.innerText = "Login successful! Redirecting...";
-                setTimeout(() => window.location.href = "dashboard.html", 1000);
-            } catch (err) {
+            } catch (error) {
                 messageEl.classList.add("error");
-                messageEl.innerText = err.message;
-            } finally {
+                messageEl.innerText = error.message;
                 button.disabled = false;
                 button.textContent = "Login";
             }
+
         });
 
     </script>
