@@ -12,7 +12,7 @@
         <form id="loginForm">
             <input type="text" id="username" placeholder="Username" required>
             <input type="password" id="password" placeholder="Password" required>
-            <button type="submit" id="loginButton">Login</button>
+            <button type="submit">Login</button>
         </form>
         <div id="message" class="auth-message"></div>
         <span class="text-link" onclick="window.location.href='register.html'">Don't have an account? Register</span>
@@ -21,17 +21,13 @@
     <script>
         const API_BASE_URL = window.location.hostname.includes("localhost")
             ? "http://localhost:7044/api/auth"
-            : "https://gameasset-backend-aj1g.onrender.com/api/auth";
+            : "https://your-render-backend.onrender.com/api/auth";
 
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const messageEl = document.getElementById("message");
-            const button = document.getElementById("loginButton");
-
             messageEl.innerText = "";
             messageEl.className = "auth-message";
-            button.disabled = true;
-            button.textContent = "Logging in...";
 
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
@@ -56,13 +52,6 @@
             } catch (error) {
                 messageEl.classList.add("error");
                 messageEl.innerText = error.message;
-                button.disabled = false;
-                button.textContent = "Login";
-            } finally {
-                if (!document.getElementById("message").classList.contains("success")) {
-                    button.disabled = false;
-                    button.textContent = "Login";
-                }
             }
         });
     </script>

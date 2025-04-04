@@ -11,9 +11,8 @@
         <h2>Register</h2>
         <form id="registerForm">
             <input type="text" id="username" placeholder="Username" required minlength="3">
-            <input type="password" id="password" placeholder="Password" required minlength="8">
-            <input type="password" id="confirmPassword" placeholder="Confirm Password" required minlength="8">
-            <button type="submit" id="registerButton">Register</button>
+            <input type="password" id="password" placeholder="Password" required minlength="6">
+            <button type="submit">Register</button>
         </form>
         <div id="message" class="auth-message"></div>
         <span class="text-link" onclick="window.location.href='login.html'">Already have an account? Login</span>
@@ -22,30 +21,18 @@
     <script>
         const API_BASE_URL = window.location.hostname.includes("localhost")
             ? "http://localhost:7044/api/auth"
-            : "https://gameasset-backend-aj1g.onrender.com/api/auth";
+            : "https://your-render-backend.onrender.com/api/auth";
 
         document.getElementById("registerForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const button = document.getElementById("registerButton");
-
-            // Double-submit protection
-            if (button.disabled) return;
-
             const messageEl = document.getElementById("message");
             messageEl.innerText = "";
             messageEl.className = "auth-message";
-            button.disabled = true;
-            button.textContent = "Creating account...";
 
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
 
             try {
-                if (password !== confirmPassword) {
-                    throw new Error("Passwords do not match");
-                }
-
                 const response = await fetch(`${API_BASE_URL}/register`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -65,22 +52,6 @@
             } catch (error) {
                 messageEl.classList.add("error");
                 messageEl.innerText = error.message;
-                button.disabled = false;
-                button.textContent = "Register";
-            }
-        });
-
-        document.getElementById("confirmPassword").addEventListener("input", function () {
-            const password = document.getElementById("password").value;
-            const confirmPassword = this.value;
-            const messageEl = document.getElementById("message");
-
-            if (confirmPassword && password !== confirmPassword) {
-                messageEl.classList.add("error");
-                messageEl.innerText = "Passwords do not match";
-            } else if (messageEl.innerText === "Passwords do not match") {
-                messageEl.innerText = "";
-                messageEl.className = "auth-message";
             }
         });
     </script>

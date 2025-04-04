@@ -1,12 +1,12 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Panel</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
+<body class="dark-theme">
     <nav class="navbar">
         <div class="logo">
             Game Asset Storage
@@ -26,7 +26,7 @@
             <div class="admin-tab" onclick="showTab('users')">User Management</div>
         </div>
 
-        <!-- Pending Assets Section -->
+        <!-- Pending Section -->
         <div class="admin-section" id="pendingSection">
             <h2>Pending Approval</h2>
             <table class="admin-table">
@@ -39,204 +39,41 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="pendingAssets">
-                    <!-- Will be populated by JavaScript -->
-                </tbody>
+                <tbody id="pendingAssets"></tbody>
             </table>
         </div>
 
-        <!-- User Management Section -->
+        <!-- User Section -->
         <div class="admin-section" id="usersSection" style="display: none;">
             <h2>User Management</h2>
-            <input type="text" id="userSearch" placeholder="Search users..." oninput="searchUsers()">
+            <input type="text" id="userSearch" placeholder="Search users..." oninput="searchUsers()" />
             <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Username</th>
-                        <th>Email</th>
                         <th>Joined</th>
                         <th>Status</th>
+                        <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody id="usersList">
-                    <!-- Will be populated by JavaScript -->
-                </tbody>
+                <tbody id="usersList"></tbody>
             </table>
         </div>
     </div>
 
-    <script>
-        // Tab switching
-        function showTab(tabName) {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelector(`.admin-tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+    <!-- User Detail Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserModal()">&times;</span>
+            <h3>User Details</h3>
+            <p><strong>Username:</strong> <span id="modalUsername"></span></p>
+            <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+            <p><strong>Role:</strong> <span id="modalRole"></span></p>
+            <button class="action-btn" onclick="promoteToAdmin()">Promote to Admin</button>
+        </div>
+    </div>
 
-            document.getElementById('pendingSection').style.display = tabName === 'pending' ? 'block' : 'none';
-            document.getElementById('usersSection').style.display = tabName === 'users' ? 'block' : 'none';
-        }
-
-        // Load pending assets
-        function loadPendingAssets() {
-            const pendingAssets = JSON.parse(localStorage.getItem('pendingAssets') || '[]');
-            const container = document.getElementById('pendingAssets');
-            container.innerHTML = pendingAssets.map(asset => `
-                    <tr>
-                        <td>${asset.name}</td>
-                        <td>${asset.category}</td>
-                        <td>${asset.uploadedBy || 'Anonymous'}</td>
-                        <td>${new Date(asset.addedDate).toLocaleDateString()}</td>
-                        <td>
-                            <button class="action-btn approve-btn" onclick="approveAsset('${asset.id}')">Approve</button>
-                            <button class="action-btn reject-btn" onclick="rejectAsset('${asset.id}')">Reject</button>
-                            <a href="${asset.image}" target="_blank" class="action-btn">Preview</a>
-                        </td>
-                    </tr>
-                `).join('');
-        }
-
-        // Load users
-        function loadUsers() {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const container = document.getElementById('usersList');
-            container.innerHTML = users.map(user => `
-                    <tr>
-                        <td>${user.username || 'Anonymous'}</td>
-                        <td>${user.email || 'No email'}</td>
-                        <td>${new Date(user.joined || Date.now()).toLocaleDateString()}</td>
-                        <td>${user.isBanned ? 'Banned' : 'Active'}</td>
-                        <td>
-                            ${user.isBanned ?
-                    `<button class="action-btn" onclick="unbanUser('${user.id}')">Unban</button>` :
-                    `<button class="action-btn ban-btn" onclick="banUser('${user.id}')">Ban</button>`
-                }
-                        </td>
-                    </tr>
-                `).join('');
-        }
-
-        // Admin actions
-        function approveAsset(assetId) {
-            const pendingAssets = JSON.parse(localStorage.getItem('pendingAssets') || '[]');
-            let assets = JSON.parse(localStorage.getItem('assetData') || '[]');
-
-            const assetIndex = pendingAssets.findIndex(a => a.id == assetId);
-            if (assetIndex !== -1) {
-                const approvedAsset = pendingAssets[assetIndex];
-                approvedAsset.status = 'approved';
-                assets.push(approvedAsset);
-
-                pendingAssets.splice(assetIndex, 1);
-
-                localStorage.setItem('pendingAssets', JSON.stringify(pendingAssets));
-                localStorage.setItem('assetData', JSON.stringify(assets));
-                loadPendingAssets();
-                alert('Asset approved!');
-            }
-        }
-
-        function rejectAsset(assetId) {
-            const pendingAssets = JSON.parse(localStorage.getItem('pendingAssets') || '[]');
-            const assetIndex = pendingAssets.findIndex(a => a.id == assetId);
-
-            if (assetIndex !== -1) {
-                pendingAssets.splice(assetIndex, 1);
-                localStorage.setItem('pendingAssets', JSON.stringify(pendingAssets));
-                loadPendingAssets();
-                alert('Asset rejected!');
-            }
-        }
-
-        function banUser(userId) {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const user = users.find(u => u.id === userId);
-
-            if (user) {
-                user.isBanned = true;
-                localStorage.setItem('users', JSON.stringify(users));
-                loadUsers();
-                alert('User banned!');
-            }
-        }
-
-        function unbanUser(userId) {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const user = users.find(u => u.id === userId);
-
-            if (user) {
-                user.isBanned = false;
-                localStorage.setItem('users', JSON.stringify(users));
-                loadUsers();
-                alert('User unbanned!');
-            }
-        }
-
-        function searchUsers() {
-            const query = document.getElementById('userSearch').value.toLowerCase();
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const filtered = users.filter(user =>
-                (user.username || '').toLowerCase().includes(query) ||
-                (user.email || '').toLowerCase().includes(query)
-            );
-
-            const container = document.getElementById('usersList');
-            container.innerHTML = filtered.map(user => `
-                    <tr>
-                        <td>${user.username || 'Anonymous'}</td>
-                        <td>${user.email || 'No email'}</td>
-                        <td>${new Date(user.joined || Date.now()).toLocaleDateString()}</td>
-                        <td>${user.isBanned ? 'Banned' : 'Active'}</td>
-                        <td>
-                            ${user.isBanned ?
-                    `<button class="action-btn" onclick="unbanUser('${user.id}')">Unban</button>` :
-                    `<button class="action-btn ban-btn" onclick="banUser('${user.id}')">Ban</button>`
-                }
-                        </td>
-                    </tr>
-                `).join('');
-        }
-
-        // Check admin status on page load
-        window.onload = function () {
-            // Verify admin status
-            const isAdmin = localStorage.getItem('isAdmin') === 'true';
-
-            if (!isAdmin) {
-                window.location.href = 'dashboard.html';
-                return;
-            }
-
-            // Initialize some sample users if none exist
-            if (!localStorage.getItem('users')) {
-                const defaultUsers = [
-                    {
-                        id: localStorage.getItem('userId'),
-                        username: 'Admin',
-                        email: 'admin@example.com',
-                        joined: new Date().toISOString(),
-                        isAdmin: true,
-                        isBanned: false
-                    }
-                ];
-                localStorage.setItem('users', JSON.stringify(defaultUsers));
-            }
-
-            loadPendingAssets();
-            loadUsers();
-
-            const token = localStorage.getItem('token');
-            if (token && token !== "placeholder_token") {
-                document.getElementById('logout-btn').style.display = "block";
-            }
-        };
-
-        // Logout functionality
-        document.getElementById('logout-btn').addEventListener('click', function () {
-            localStorage.clear();
-            window.location.href = "login.html";
-        });
-    </script>
+    <script src="js/admin.js"></script>
 </body>
 </html>
