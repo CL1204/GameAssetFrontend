@@ -45,31 +45,43 @@
                 });
 
                 let data;
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
+                try {
                     data = await response.json();
-                } else {
+                } catch {
                     const raw = await response.text();
-                    throw new Error(raw || "Login failed");
+                    throw new Error(raw || "Login error");
                 }
 
-                if (response.ok) {
-                    messageEl.classList.add("success");
-                    messageEl.innerText = "Login successful! Redirecting...";
-                    setTimeout(() => window.location.href = "dashboard.html", 1000);
-                } else {
+                if (response.status === 403) {
+                    throw new Error("Sorry, this account is banned.");
+                }
+
+                if (!response.ok) {
                     throw new Error(data.message || "Login failed");
                 }
+
+                messageEl.classList.add("success");
+                messageEl.innerText = "Login successful! Redirecting...";
+
+                setTimeout(() => {
+                    if (data.isAdmin) {
+                        window.location.href = "admin.html";
+                    } else {
+                        window.location.href = "dashboard.html";
+                    }
+                }, 1000);
 
             } catch (error) {
                 messageEl.classList.add("error");
                 messageEl.innerText = error.message;
-                button.disabled = false;
-                button.textContent = "Login";
+            } finally {
+                if (!messageEl.classList.contains("success")) {
+                    button.disabled = false;
+                    button.textContent = "Login";
+                }
             }
-
         });
-
     </script>
+
 </body>
 </html>
