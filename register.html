@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="auth-page">
-    <div class="auth-container">
+    <div class="auth-box">
         <h2>Register</h2>
         <form id="registerForm">
             <input type="text" id="username" placeholder="Username" required minlength="3">
@@ -16,7 +16,10 @@
             <button type="submit" id="registerButton">Register</button>
         </form>
         <div id="message" class="auth-message"></div>
-        <span class="text-link" onclick="window.location.href='login.html'">Already have an account? Login</span>
+        <div class="auth-footer">
+            <span>Already have an account?</span>
+            <a href="login.html" class="text-link">Login</a>
+        </div>
     </div>
 
     <script>
@@ -27,11 +30,10 @@
         document.getElementById("registerForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const button = document.getElementById("registerButton");
+            const messageEl = document.getElementById("message");
 
-            // Prevent double submission
             if (button.disabled) return;
 
-            const messageEl = document.getElementById("message");
             messageEl.innerText = "";
             messageEl.className = "auth-message";
             button.disabled = true;
@@ -53,14 +55,8 @@
                     body: JSON.stringify({ username, password })
                 });
 
-                let data;
                 const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    data = await response.json();
-                } else {
-                    const raw = await response.text();
-                    throw new Error(raw || "Registration failed");
-                }
+                const data = contentType?.includes("application/json") ? await response.json() : await response.text();
 
                 if (response.ok) {
                     messageEl.classList.add("success");
@@ -69,21 +65,19 @@
                 } else {
                     throw new Error(data.message || "Registration failed");
                 }
+
             } catch (error) {
                 messageEl.classList.add("error");
                 messageEl.innerText = error.message;
                 button.disabled = false;
                 button.textContent = "Register";
             }
-
         });
 
         document.getElementById("confirmPassword").addEventListener("input", function () {
-            const password = document.getElementById("password").value;
-            const confirmPassword = this.value;
             const messageEl = document.getElementById("message");
-
-            if (confirmPassword && password !== confirmPassword) {
+            const password = document.getElementById("password").value;
+            if (this.value && password !== this.value) {
                 messageEl.classList.add("error");
                 messageEl.innerText = "Passwords do not match";
             } else if (messageEl.innerText === "Passwords do not match") {

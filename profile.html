@@ -14,6 +14,18 @@
     <div class="container">
         <h2 id="usernameDisplay">@Username</h2>
 
+        <button class="action-btn" onclick="toggleEditProfile()">Edit Profile</button>
+
+        <div id="editProfileForm" class="dashboard-section" style="display:none;">
+            <h3>Edit Profile</h3>
+            <form id="profileEditForm">
+                <input type="text" id="editUsername" placeholder="New Username" required />
+                <input type="password" id="editPassword" placeholder="New Password" required minlength="8" />
+                <button type="submit">Save Changes</button>
+            </form>
+            <div class="auth-message" id="editProfileMessage"></div>
+        </div>
+
         <section class="dashboard-section">
             <h3>⭐ Liked Assets</h3>
             <div id="likedAssets" class="assets-grid"></div>
@@ -45,62 +57,9 @@
             <span>👤</span>
             <span>Me</span>
         </button>
+        <div id="bottomNavActions"></div>
     </div>
 
-    <script>
-        async function fetchAssets() {
-            try {
-                const res = await fetch("https://gameasset-backend-aj1g.onrender.com/api/asset/approved", { credentials: 'include' });
-                const data = await res.json();
-
-                const userRes = await fetch("https://gameasset-backend-aj1g.onrender.com/api/auth/check-auth", { credentials: 'include' });
-                const user = await userRes.json();
-
-                document.getElementById("usernameDisplay").innerText = `@${user.username}`;
-
-                const liked = data.filter(asset => asset.likedBy?.includes(user.username));
-                const uploaded = data.filter(asset => asset.userId == user.userId);
-
-                const likedContainer = document.getElementById("likedAssets");
-                const uploadedContainer = document.getElementById("uploadedAssets");
-
-                if (liked.length === 0) document.getElementById("noLiked").style.display = "block";
-                else liked.forEach(a => likedContainer.appendChild(renderCard(a)));
-
-                if (uploaded.length === 0) document.getElementById("noUploads").style.display = "block";
-                else uploaded.forEach(a => uploadedContainer.appendChild(renderCard(a)));
-            } catch (err) {
-                console.error("Failed to fetch profile data:", err);
-            }
-        }
-
-        function renderCard(asset) {
-            const div = document.createElement("div");
-            div.className = "asset-card";
-            div.innerHTML = `
-                <img src="${asset.imageUrl}" alt="${asset.title}" />
-                <h4>${asset.title}</h4>
-                <p>${asset.description}</p>
-                <a class="download-btn" href="${asset.imageUrl}" download>Download</a>
-            `;
-            return div;
-        }
-
-        function logout() {
-            fetch("https://gameasset-backend-aj1g.onrender.com/api/auth/logout", {
-                method: "POST",
-                credentials: "include"
-            }).then(() => {
-                window.location.href = "login.html";
-            });
-        }
-
-        function toggleUploadPanel() {
-            const panel = document.getElementById("uploadPanel");
-            if (panel) panel.style.display = panel.style.display === "none" ? "block" : "none";
-        }
-
-        window.onload = fetchAssets;
-    </script>
+    <script src="js/profile.js"></script>
 </body>
 </html>

@@ -1,103 +1,103 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Assets</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="preload" href="placeholder.jpg" as="image">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Explore</title>
+    <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
-    <!-- Navigation Bar -->
+<body class="dark-mode">
+    <!-- Navigation -->
     <nav class="navbar">
         <div class="logo">
             Game Asset Storage
             <span class="admin-badge" id="adminBadge" style="display: none;">Admin</span>
         </div>
-        <div class="menu">
-            <a href="dashboard.html" class="home-btn">Home</a>
-            <a href="assets.html" class="assets-link">Assets</a>
-            <a href="admin.html" class="admin-link" id="adminLink" style="display: none;">Admin Panel</a>
-        </div>
-        <button id="logout-btn" class="logout-btn" style="display: none;">Logout</button>
+        <span id="userLabel" class="user-label"></span>
     </nav>
 
     <!-- Main Content -->
     <div class="container">
         <div class="main-content">
-            <h2>Game Assets</h2>
+            <h2>Explore</h2>
 
-            <!-- Category Navigation -->
+            <input type="text" id="searchBar" placeholder="Search assets..." aria-label="Search assets" />
+
+            <!-- Category Buttons -->
             <div class="category-nav">
                 <a href="#" class="category-btn active" onclick="showCategory('characters', this)">Characters</a>
                 <a href="#" class="category-btn" onclick="showCategory('environment', this)">Environment</a>
                 <a href="#" class="category-btn" onclick="showCategory('soundtracks', this)">Soundtracks</a>
             </div>
 
-            <input type="text" id="searchBar" placeholder="Search assets..." onkeyup="searchAssets()">
-
-            <!-- Character Assets -->
+            <!-- Assets -->
             <div class="asset-section active" id="characters-section">
                 <div class="assets-grid" id="characters"></div>
             </div>
-
-            <!-- Environment Assets -->
             <div class="asset-section" id="environment-section">
                 <div class="assets-grid" id="environment"></div>
             </div>
-
-            <!-- Soundtrack Assets -->
             <div class="asset-section" id="soundtracks-section">
                 <div class="assets-grid" id="soundtracks"></div>
             </div>
         </div>
     </div>
 
-    <!-- Upload Toggle Button -->
-    <button class="upload-toggle" onclick="toggleUploadPanel()">+ Upload Asset</button>
-
-    <!-- Upload Panel -->
+    <!-- Upload Panel (centered modal) -->
     <div class="upload-panel" id="uploadPanel" style="display: none;">
         <h3>Upload New Asset</h3>
         <form class="upload-form" id="uploadForm">
-            <input type="text" id="assetName" placeholder="Asset Name" required>
+            <input type="text" id="assetName" placeholder="Asset Name" required />
             <select id="assetCategory" required>
                 <option value="">Select Category</option>
                 <option value="characters">Character</option>
                 <option value="environment">Environment</option>
                 <option value="soundtracks">Soundtrack</option>
             </select>
+            <input type="text" id="tagInput" placeholder="Tags (comma-separated)" />
             <textarea id="assetDescription" placeholder="Description"></textarea>
             <div class="file-upload">
                 <label for="assetFile">Choose File:</label>
-                <input type="file" id="assetFile" required>
+                <input type="file" id="assetFile" required />
             </div>
-            <input type="text" id="assetImage" placeholder="Preview Image URL">
             <button type="submit">Upload Asset</button>
         </form>
     </div>
 
-    <!-- Asset Detail Modal -->
-    <div id="assetModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div class="asset-viewer">
-                <div class="asset-gallery">
-                    <img id="mainAssetImage" src="" alt="">
-                    <div class="thumbnails"></div>
-                </div>
-                <div class="asset-comments">
-                    <h3>Comments</h3>
-                    <div class="comments-list"></div>
-                    <textarea placeholder="Add comment..." id="newComment"></textarea>
-                    <button onclick="postComment()">Post</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Bottom Nav Bar -->
+    <nav class="bottom-nav" id="bottomNav">
+        <button onclick="location.href='dashboard.html'">
+            <span>🏠</span>
+            <span>Home</span>
+        </button>
+        <button onclick="location.href='assets.html'">
+            <span>📂</span>
+            <span>Explore</span>
+        </button>
+        <button class="plus-btn" onclick="toggleUploadPanel()">+</button>
+        <button onclick="location.href='profile.html'">
+            <span>👤</span>
+            <span>Me</span>
+        </button>
+    </nav>
 
-    <!-- JavaScript -->
     <script src="js/assets.js"></script>
-
+    <script>
+        // Inject Actions button if admin
+        fetch("https://gameasset-backend-aj1g.onrender.com/api/auth/check-auth", { credentials: "include" })
+            .then(res => res.ok ? res.json() : null)
+            .then(user => {
+                if (user?.isAdmin) {
+                    const btn = document.createElement("button");
+                    btn.innerHTML = `<span>🛠️</span><span>Actions</span>`;
+                    btn.onclick = () => location.href = 'admin.html';
+                    document.getElementById("bottomNav").insertBefore(btn, document.querySelector(".plus-btn").nextSibling);
+                    document.getElementById("adminBadge").style.display = "inline";
+                }
+                if (user?.username) {
+                    document.getElementById("userLabel").textContent = user.username;
+                }
+            });
+    </script>
 </body>
 </html>

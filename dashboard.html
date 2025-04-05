@@ -22,6 +22,11 @@
     <div class="container">
         <div class="main-content">
 
+            <!-- Search Bar -->
+            <div class="dashboard-section">
+                <input type="text" id="searchBar" placeholder="Search assets or tags..." aria-label="Search assets" />
+            </div>
+
             <!-- Top Rated -->
             <div class="dashboard-section">
                 <h2>🔥 Top Rated</h2>
@@ -34,34 +39,10 @@
                 <div class="assets-grid" id="discoverSection"></div>
             </div>
 
-            <!-- Category Navigation -->
-            <div class="dashboard-section">
-                <h2>Game Assets</h2>
-                <div class="category-nav">
-                    <a href="#" class="category-btn active" onclick="showCategory('characters', this)">Characters</a>
-                    <a href="#" class="category-btn" onclick="showCategory('environment', this)">Environment</a>
-                    <a href="#" class="category-btn" onclick="showCategory('soundtracks', this)">Soundtracks</a>
-                </div>
-                <input type="text" id="searchBar" placeholder="Search assets..." onkeyup="searchAssets()" aria-label="Search assets" />
-
-
-                <div class="asset-section active" id="characters-section">
-                    <div class="assets-grid" id="characters"></div>
-                </div>
-                <div class="asset-section" id="environment-section">
-                    <div class="assets-grid" id="environment"></div>
-                </div>
-                <div class="asset-section" id="soundtracks-section">
-                    <div class="assets-grid" id="soundtracks"></div>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- Upload Toggle -->
-    <button class="upload-toggle" onclick="toggleUploadPanel()">+</button>
-
-    <!-- Upload Panel -->
+    <!-- Upload Panel (toggle by bottom nav only) -->
     <div class="upload-panel" id="uploadPanel" style="display: none;">
         <h3>Upload New Asset</h3>
         <form class="upload-form" id="uploadForm">
@@ -83,7 +64,7 @@
     </div>
 
     <!-- Bottom Nav Bar -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" id="bottomNav">
         <button onclick="location.href='dashboard.html'">
             <span>🏠</span>
             <span>Home</span>
@@ -102,5 +83,19 @@
     </nav>
 
     <script src="js/dashboard.js"></script>
+    <script>
+        // Inject admin Actions button if user is admin
+        fetch("https://gameasset-backend-aj1g.onrender.com/api/auth/check-auth", { credentials: "include" })
+            .then(res => res.ok ? res.json() : null)
+            .then(user => {
+                if (user?.isAdmin) {
+                    const btn = document.createElement("button");
+                    btn.innerHTML = `<span>🛠️</span><span>Actions</span>`;
+                    btn.onclick = () => location.href = 'admin.html';
+                    document.getElementById("bottomNav").insertBefore(btn, document.querySelector(".plus-btn").nextSibling);
+                    document.getElementById("adminBadge").style.display = "inline";
+                }
+            });
+    </script>
 </body>
 </html>

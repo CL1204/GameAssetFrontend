@@ -1,7 +1,9 @@
-﻿// ✅ Modified dashboard.js with Top Rated and Discover sections
-const BASE_URL = window.location.hostname.includes("localhost")
+﻿const BASE_URL = window.location.hostname.includes("localhost")
     ? "http://localhost:7044"
     : "https://gameasset-backend-aj1g.onrender.com";
+
+let allAssets = [];
+let allUsernames = [];
 
 window.onload = async function () {
     const auth = await fetch(`${BASE_URL}/api/auth/check-auth`, { credentials: "include" });
@@ -13,9 +15,15 @@ window.onload = async function () {
 
     if (data.isAdmin) {
         document.getElementById("adminBadge").style.display = "inline";
+        const nav = document.querySelector(".bottom-nav");
+        const btn = document.createElement("button");
+        btn.innerHTML = `<span>🛠️</span><span>Actions</span>`;
+        btn.onclick = () => location.href = "admin.html";
+        nav.insertBefore(btn, nav.querySelector(".plus-btn").nextSibling);
     }
 
     loadAssets();
+    fetchAllUsernames();
 };
 
 document.getElementById("uploadForm").addEventListener("submit", async e => {
@@ -41,9 +49,9 @@ document.getElementById("uploadForm").addEventListener("submit", async e => {
 
     if (res.ok) {
         alert("Upload successful! Awaiting approval.");
-        loadAssets();
         toggleUploadPanel();
         e.target.reset();
+        loadAssets();
     } else {
         alert("Upload failed.");
     }
@@ -52,24 +60,9 @@ document.getElementById("uploadForm").addEventListener("submit", async e => {
 async function loadAssets() {
     const res = await fetch(`${BASE_URL}/api/assets/approved`);
     const assets = await res.json();
-    displayAssets(assets);
+    allAssets = assets;
     displayTopRated(assets);
     displayDiscover(assets);
-}
-
-function displayAssets(assets) {
-    const grids = {
-        characters: document.getElementById("characters"),
-        environment: document.getElementById("environment"),
-        soundtracks: document.getElementById("soundtracks")
-    };
-    Object.values(grids).forEach(g => g.innerHTML = "");
-
-    assets.forEach(asset => {
-        const card = createAssetCard(asset);
-        const category = asset.category.toLowerCase();
-        if (grids[category]) grids[category].appendChild(card);
-    });
 }
 
 function displayTopRated(assets) {
@@ -91,7 +84,7 @@ function createAssetCard(asset) {
     card.className = "asset-card";
     card.innerHTML = `
         <button class="favorite-btn" onclick="likeAsset(${asset.id}, event)">
-            ♥ <span class="favorite-count">${asset.likes}</span>
+          ♥ <span class="favorite-count">${asset.likes}</span>
         </button>
         <img src="${asset.imageUrl}" alt="${asset.title}" onerror="this.src='placeholder.jpg'" />
         <h4>${asset.title}</h4>
@@ -115,19 +108,56 @@ function toggleUploadPanel() {
     panel.style.display = panel.style.display === "none" ? "block" : "none";
 }
 
-function showCategory(category, el) {
-    document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
-    el.classList.add("active");
-    document.querySelectorAll(".asset-section").forEach(s => s.classList.remove("active"));
-    document.getElementById(`${category}-section`).classList.add("active");
+// Fetch all usernames for search suggestions
+async function fetchAllUsernames() {
+    try {
+        const res = await fetch(`${BASE_URL}/admin/users`, { credentials: "include" });
+        const users = await res.json();
+        allUsernames = users.map(u => u.username.toLowerCase());
+    } catch (err) {
+        console.error("Could not fetch users:", err);
+    }
 }
 
-function searchAssets() {
-    const query = document.getElementById("searchBar").value.toLowerCase();
-    const activeGrid = document.querySelector(".asset-section.active .assets-grid");
-    if (!activeGrid) return;
-    activeGrid.querySelectorAll(".asset-card").forEach(card => {
-        const name = card.querySelector("h4").textContent.toLowerCase();
-        card.style.display = name.includes(query) ? "flex" : "none";
+// Search bar functionality
+document.getElementById("searchBar").addEventListener("input", () => {
+    const query = document.getElementById("searchBar").value.toLowerCase().trim();
+    const discover = document.getElementById("discoverSection");
+    const topRated = document.getElementById("topRatedSection");
+
+    discover.innerHTML = "";
+    topRated.innerHTML = "";
+
+    if (query === "") {
+        displayTopRated(allAssets);
+        displayDiscover(allAssets);
+        return;
+    }
+
+    // Search assets by title or tag
+    const filteredAssets = allAssets.filter(asset =>
+        asset.title.toLowerCase().includes(query) ||
+        asset.tags?.some(tag => tag.toLowerCase().includes(query))
+    );
+
+    filteredAssets.forEach(asset => {
+        discover.appendChild(createAssetCard(asset));
     });
-}
+
+    // Search usernames
+    const matchedUser = allUsernames.find(u => u.includes(query));
+    if (matchedUser) {
+        const userResult = document.createElement("div");
+        userResult.className = "asset-card";
+        userResult.style.textAlign = "center";
+        userResult.style.cursor = "pointer";
+        userResult.innerHTML = `
+            <h4>🔍 View @${matchedUser}'s uploads</h4>
+            <p>Click to explore their assets</p>
+        `;
+        userResult.onclick = () => {
+            window.location.href = `profile.html?username=${encodeURIComponent(matchedUser)}`;
+        };
+        discover.prepend(userResult);
+    }
+});

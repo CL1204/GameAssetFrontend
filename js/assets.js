@@ -2,7 +2,6 @@
     ? "http://localhost:7044"
     : "https://gameasset-backend-aj1g.onrender.com";
 
-// Load assets on page load
 window.onload = async () => {
     try {
         const res = await fetch(`${BASE_URL}/api/assets/approved`);
@@ -15,54 +14,46 @@ window.onload = async () => {
     }
 };
 
-// Show category section
 function showCategory(category, clickedElement) {
     document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
     clickedElement.classList.add("active");
 
-    document.querySelectorAll(".asset-section").forEach(section => {
-        section.classList.remove("active");
-    });
+    document.querySelectorAll(".asset-section").forEach(section => section.classList.remove("active"));
     document.getElementById(`${category}-section`).classList.add("active");
 
     document.getElementById("searchBar").value = "";
     searchAssets(category);
 }
 
-// Populate grid by category
 function displayAssets(assets) {
     const categories = {
         characters: document.getElementById("characters"),
         environment: document.getElementById("environment"),
         soundtracks: document.getElementById("soundtracks")
     };
-
     Object.values(categories).forEach(el => el.innerHTML = "");
 
     assets.forEach(asset => {
         const card = document.createElement("div");
         card.className = "asset-card";
         card.innerHTML = `
-            <button class="favorite-btn" onclick="likeAsset(${asset.id}, this)">
-                ♥ <span class="favorite-count">${asset.likes}</span>
-            </button>
-            <img src="${asset.imageUrl}" alt="${asset.title}" onerror="this.src='placeholder.jpg'" />
-            <h4>${asset.title}</h4>
-            <p>${asset.description}</p>
-            <small>Tags: ${asset.tags?.join(", ") || "None"}</small>
-            <a class="download-btn" href="#" onclick="downloadAsset(${asset.id}, '${asset.fileUrl}'); return false;">Download</a>
-        `;
-        if (categories[asset.category]) {
-            categories[asset.category].appendChild(card);
-        }
+      <button class="favorite-btn" onclick="likeAsset(${asset.id}, this)">
+        ♥ <span class="favorite-count">${asset.likes}</span>
+      </button>
+      <img src="${asset.imageUrl}" alt="${asset.title}" onerror="this.src='placeholder.jpg'" />
+      <h4>${asset.title}</h4>
+      <p>${asset.description}</p>
+      <small>Tags: ${asset.tags?.join(", ") || "None"}</small>
+      <a class="download-btn" href="#" onclick="downloadAsset(${asset.id}, '${asset.fileUrl}'); return false;">Download</a>
+    `;
+        categories[asset.category]?.appendChild(card);
     });
 }
 
-// Search assets by title and tag
 function setupSearch(assets) {
-    const searchInput = document.getElementById("searchBar");
-    searchInput.addEventListener("input", () => {
-        const query = searchInput.value.toLowerCase();
+    const input = document.getElementById("searchBar");
+    input.addEventListener("input", () => {
+        const query = input.value.toLowerCase();
         const active = document.querySelector(".asset-section.active");
         const category = active.id.replace("-section", "");
 
@@ -73,39 +64,34 @@ function setupSearch(assets) {
         );
 
         const container = document.getElementById(category);
-        container.innerHTML = "";
-
-        if (filtered.length === 0) {
-            container.innerHTML = "<p>No matching assets found.</p>";
-            return;
-        }
+        container.innerHTML = filtered.length
+            ? ""
+            : "<p>No matching assets found.</p>";
 
         filtered.forEach(asset => {
             const card = document.createElement("div");
             card.className = "asset-card";
             card.innerHTML = `
-                <button class="favorite-btn" onclick="likeAsset(${asset.id}, this)">
-                    ♥ <span class="favorite-count">${asset.likes}</span>
-                </button>
-                <img src="${asset.imageUrl}" alt="${asset.title}" onerror="this.src='placeholder.jpg'" />
-                <h4>${asset.title}</h4>
-                <p>${asset.description}</p>
-                <small>Tags: ${asset.tags?.join(", ") || "None"}</small>
-                <a class="download-btn" href="#" onclick="downloadAsset(${asset.id}, '${asset.fileUrl}'); return false;">Download</a>
-            `;
+        <button class="favorite-btn" onclick="likeAsset(${asset.id}, this)">
+          ♥ <span class="favorite-count">${asset.likes}</span>
+        </button>
+        <img src="${asset.imageUrl}" alt="${asset.title}" onerror="this.src='placeholder.jpg'" />
+        <h4>${asset.title}</h4>
+        <p>${asset.description}</p>
+        <small>Tags: ${asset.tags?.join(", ") || "None"}</small>
+        <a class="download-btn" href="#" onclick="downloadAsset(${asset.id}, '${asset.fileUrl}'); return false;">Download</a>
+      `;
             container.appendChild(card);
         });
     });
 }
 
-// Handle Like action
 async function likeAsset(id, button) {
     try {
         const res = await fetch(`${BASE_URL}/api/assets/${id}/like`, {
             method: "POST",
             credentials: "include"
         });
-
         if (res.ok) {
             const data = await res.json();
             button.querySelector(".favorite-count").textContent = data.likes;
@@ -117,7 +103,6 @@ async function likeAsset(id, button) {
     }
 }
 
-// Handle Download action
 async function downloadAsset(id, fileUrl) {
     try {
         await fetch(`${BASE_URL}/api/assets/${id}/download`, {
@@ -128,4 +113,9 @@ async function downloadAsset(id, fileUrl) {
     } catch (err) {
         console.error("Download error:", err);
     }
+}
+
+function toggleUploadPanel() {
+    const panel = document.getElementById("uploadPanel");
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
 }
