@@ -1,17 +1,17 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="auth-page">
     <div class="auth-container">
         <h2>Login</h2>
         <form id="loginForm">
-            <input type="text" id="username" placeholder="Username" required>
-            <input type="password" id="password" placeholder="Password" required>
+            <input type="text" id="username" placeholder="Username" required />
+            <input type="password" id="password" placeholder="Password" required />
             <button type="submit" id="loginButton">Login</button>
         </form>
         <div id="message" class="auth-message"></div>
@@ -25,16 +25,17 @@
 
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
+
             const messageEl = document.getElementById("message");
             const button = document.getElementById("loginButton");
-
             messageEl.innerText = "";
             messageEl.className = "auth-message";
+
             button.disabled = true;
             button.textContent = "Logging in...";
 
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
 
             try {
                 const response = await fetch(`${API_BASE_URL}/login`, {
@@ -48,40 +49,32 @@
                 try {
                     data = await response.json();
                 } catch {
-                    const raw = await response.text();
-                    throw new Error(raw || "Login error");
+                    const text = await response.text();
+                    throw new Error(text || "Login error");
                 }
 
                 if (response.status === 403) {
-                    throw new Error("Sorry, this account is banned.");
+                    throw new Error("Sorry, this account is banned");
                 }
 
                 if (!response.ok) {
                     throw new Error(data.message || "Login failed");
                 }
 
+                // ✅ Success
                 messageEl.classList.add("success");
                 messageEl.innerText = "Login successful! Redirecting...";
-
                 setTimeout(() => {
-                    if (data.isAdmin) {
-                        window.location.href = "admin.html";
-                    } else {
-                        window.location.href = "dashboard.html";
-                    }
-                }, 1000);
+                    window.location.href = data.isAdmin ? "admin.html" : "dashboard.html";
+                }, 1200);
 
-            } catch (error) {
+            } catch (err) {
                 messageEl.classList.add("error");
-                messageEl.innerText = error.message;
-            } finally {
-                if (!messageEl.classList.contains("success")) {
-                    button.disabled = false;
-                    button.textContent = "Login";
-                }
+                messageEl.innerText = err.message;
+                button.disabled = false;
+                button.textContent = "Login";
             }
         });
     </script>
-
 </body>
 </html>

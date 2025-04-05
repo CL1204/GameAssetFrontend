@@ -5,27 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Panel</title>
     <link rel="stylesheet" href="css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 </head>
-<body class="dark-theme">
+<body class="dark-mode">
+    <!-- Top Navbar -->
     <nav class="navbar">
         <div class="logo">
-            Game Asset Storage
+            <span class="site-title">Game Asset Storage</span>
             <span class="admin-badge">Admin</span>
         </div>
-        <div class="menu">
-            <a href="dashboard.html" class="home-btn">Home</a>
-            <a href="assets.html" class="assets-link">Assets</a>
-            <a href="admin.html" class="admin-link">Admin Panel</a>
-        </div>
-        <button id="logout-btn" class="logout-btn">Logout</button>
+        <span id="userLabel" class="user-label"></span>
     </nav>
 
-    <div class="admin-container">
-        <div class="admin-tabs">
-            <div class="admin-tab active" onclick="showTab('pending')">Pending Assets</div>
-            <div class="admin-tab" onclick="showTab('users')">User Management</div>
-        </div>
-
+    <!-- Admin Main Sections -->
+    <div class="container admin-container">
         <!-- Pending Section -->
         <div class="admin-section" id="pendingSection">
             <h2>Pending Approval</h2>
@@ -62,7 +55,7 @@
         </div>
     </div>
 
-    <!-- User Detail Modal -->
+    <!-- Modal for User Details -->
     <div id="userModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeUserModal()">&times;</span>
@@ -73,6 +66,30 @@
             <button class="action-btn" onclick="promoteToAdmin()">Promote to Admin</button>
         </div>
     </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button onclick="location.href='dashboard.html'">
+            <span>🏠</span>
+            <span>Home</span>
+        </button>
+        <button onclick="location.href='assets.html'">
+            <span>📂</span>
+            <span>Explore</span>
+        </button>
+        <button class="plus-btn" onclick="location.href='admin.html'">
+            +
+        </button>
+        <button onclick="toggleAdminTab('pending')">
+            <span>🛠️</span>
+            <span>Actions</span>
+        </button>
+        <button onclick="toggleAdminTab('users')">
+            <span>👥</span>
+            <span>Users</span>
+        </button>
+        <button class="logout-pill" onclick="logout()">Logout</button>
+    </nav>
 
     <script src="js/admin.js"></script>
 </body>

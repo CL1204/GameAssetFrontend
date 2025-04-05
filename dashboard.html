@@ -3,48 +3,66 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Game Assets Dashboard</title>
+    <title>Game Asset Storage</title>
     <link rel="stylesheet" href="css/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body class="dark-mode">
+
+    <!-- Top Header -->
     <nav class="navbar">
         <div class="logo">
-            Game Asset Storage
-            <span class="admin-badge" id="adminBadge" style="display: none">Admin</span>
+            <span class="site-title">Game Asset Storage</span>
+            <span class="admin-badge" id="adminBadge" style="display: none;">Admin</span>
         </div>
-        <div class="menu">
-            <a href="dashboard.html" class="home-btn">Home</a>
-            <a href="assets.html" class="assets-link">Assets</a>
-            <a href="admin.html" class="admin-link" id="adminLink" style="display: none">Admin Panel</a>
-        </div>
-        <button id="logout-btn" class="logout-btn" style="display: none">Logout</button>
+        <span id="userLabel" class="user-label"></span>
     </nav>
 
+    <!-- Main Dashboard Content -->
     <div class="container">
         <div class="main-content">
-            <h2>Game Assets</h2>
-            <div class="category-nav">
-                <a href="#" class="category-btn active" onclick="showCategory('characters', this)">Characters</a>
-                <a href="#" class="category-btn" onclick="showCategory('environment', this)">Environment</a>
-                <a href="#" class="category-btn" onclick="showCategory('soundtracks', this)">Soundtracks</a>
+
+            <!-- Top Rated -->
+            <div class="dashboard-section">
+                <h2>🔥 Top Rated</h2>
+                <div class="assets-grid" id="topRatedSection"></div>
             </div>
-            <input type="text" id="searchBar" placeholder="Search assets..." onkeyup="searchAssets()" />
-            <div class="asset-section active" id="characters-section">
-                <div class="assets-grid" id="characters"></div>
+
+            <!-- Discover -->
+            <div class="dashboard-section">
+                <h2>✨ Discover</h2>
+                <div class="assets-grid" id="discoverSection"></div>
             </div>
-            <div class="asset-section" id="environment-section">
-                <div class="assets-grid" id="environment"></div>
-            </div>
-            <div class="asset-section" id="soundtracks-section">
-                <div class="assets-grid" id="soundtracks"></div>
+
+            <!-- Category Navigation -->
+            <div class="dashboard-section">
+                <h2>Game Assets</h2>
+                <div class="category-nav">
+                    <a href="#" class="category-btn active" onclick="showCategory('characters', this)">Characters</a>
+                    <a href="#" class="category-btn" onclick="showCategory('environment', this)">Environment</a>
+                    <a href="#" class="category-btn" onclick="showCategory('soundtracks', this)">Soundtracks</a>
+                </div>
+                <input type="text" id="searchBar" placeholder="Search assets..." onkeyup="searchAssets()" aria-label="Search assets" />
+
+
+                <div class="asset-section active" id="characters-section">
+                    <div class="assets-grid" id="characters"></div>
+                </div>
+                <div class="asset-section" id="environment-section">
+                    <div class="assets-grid" id="environment"></div>
+                </div>
+                <div class="asset-section" id="soundtracks-section">
+                    <div class="assets-grid" id="soundtracks"></div>
+                </div>
             </div>
         </div>
-        <button class="user-settings-btn" onclick="openUserSettings()">User Settings</button>
     </div>
 
-    <button class="upload-toggle" onclick="toggleUploadPanel()">+ Upload Asset</button>
+    <!-- Upload Toggle -->
+    <button class="upload-toggle" onclick="toggleUploadPanel()">+</button>
 
-    <div class="upload-panel" id="uploadPanel" style="display: none">
+    <!-- Upload Panel -->
+    <div class="upload-panel" id="uploadPanel" style="display: none;">
         <h3>Upload New Asset</h3>
         <form class="upload-form" id="uploadForm">
             <input type="text" id="assetName" placeholder="Asset Name" required />
@@ -64,17 +82,24 @@
         </form>
     </div>
 
-    <div id="settingsModal" class="modal" style="display:none">
-        <div class="modal-content">
-            <span class="close" onclick="closeUserSettings()">&times;</span>
-            <h2>Update Account Settings</h2>
-            <form id="settingsForm">
-                <input type="text" id="newUsername" placeholder="New Username" />
-                <input type="password" id="newPassword" placeholder="New Password" />
-                <button type="submit">Save Changes</button>
-            </form>
-        </div>
-    </div>
+    <!-- Bottom Nav Bar -->
+    <nav class="bottom-nav">
+        <button onclick="location.href='dashboard.html'">
+            <span>🏠</span>
+            <span>Home</span>
+        </button>
+        <button onclick="location.href='assets.html'">
+            <span>📂</span>
+            <span>Explore</span>
+        </button>
+        <button class="plus-btn" onclick="toggleUploadPanel()">
+            +
+        </button>
+        <button onclick="location.href='profile.html'">
+            <span>👤</span>
+            <span>Me</span>
+        </button>
+    </nav>
 
     <script src="js/dashboard.js"></script>
 </body>

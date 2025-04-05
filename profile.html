@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile</title>
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">GameAssetStorage</div>
+    </nav>
+
+    <div class="container">
+        <h2 id="usernameDisplay">@Username</h2>
+
+        <section class="dashboard-section">
+            <h3>⭐ Liked Assets</h3>
+            <div id="likedAssets" class="assets-grid"></div>
+            <p id="noLiked" style="text-align: center; display: none;">No liked posts yet.</p>
+        </section>
+
+        <section class="dashboard-section">
+            <h3>📁 Uploaded Assets</h3>
+            <div id="uploadedAssets" class="assets-grid"></div>
+            <p id="noUploads" style="text-align: center; display: none;">No posts yet.</p>
+        </section>
+
+        <button class="logout-pill" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="bottom-nav">
+        <button onclick="location.href='dashboard.html'">
+            <span>🏠</span>
+            <span>Home</span>
+        </button>
+        <button onclick="location.href='assets.html'">
+            <span>📂</span>
+            <span>Explore</span>
+        </button>
+        <button class="plus-btn" onclick="toggleUploadPanel()">
+            +
+        </button>
+        <button onclick="location.href='profile.html'">
+            <span>👤</span>
+            <span>Me</span>
+        </button>
+    </div>
+
+    <script>
+        async function fetchAssets() {
+            try {
+                const res = await fetch("https://gameasset-backend-aj1g.onrender.com/api/asset/approved", { credentials: 'include' });
+                const data = await res.json();
+
+                const userRes = await fetch("https://gameasset-backend-aj1g.onrender.com/api/auth/check-auth", { credentials: 'include' });
+                const user = await userRes.json();
+
+                document.getElementById("usernameDisplay").innerText = `@${user.username}`;
+
+                const liked = data.filter(asset => asset.likedBy?.includes(user.username));
+                const uploaded = data.filter(asset => asset.userId == user.userId);
+
+                const likedContainer = document.getElementById("likedAssets");
+                const uploadedContainer = document.getElementById("uploadedAssets");
+
+                if (liked.length === 0) document.getElementById("noLiked").style.display = "block";
+                else liked.forEach(a => likedContainer.appendChild(renderCard(a)));
+
+                if (uploaded.length === 0) document.getElementById("noUploads").style.display = "block";
+                else uploaded.forEach(a => uploadedContainer.appendChild(renderCard(a)));
+            } catch (err) {
+                console.error("Failed to fetch profile data:", err);
+            }
+        }
+
+        function renderCard(asset) {
+            const div = document.createElement("div");
+            div.className = "asset-card";
+            div.innerHTML = `
+                <img src="${asset.imageUrl}" alt="${asset.title}" />
+                <h4>${asset.title}</h4>
+                <p>${asset.description}</p>
+                <a class="download-btn" href="${asset.imageUrl}" download>Download</a>
+            `;
+            return div;
+        }
+
+        function logout() {
+            fetch("https://gameasset-backend-aj1g.onrender.com/api/auth/logout", {
+                method: "POST",
+                credentials: "include"
+            }).then(() => {
+                window.location.href = "login.html";
+            });
+        }
+
+        function toggleUploadPanel() {
+            const panel = document.getElementById("uploadPanel");
+            if (panel) panel.style.display = panel.style.display === "none" ? "block" : "none";
+        }
+
+        window.onload = fetchAssets;
+    </script>
+</body>
+</html>

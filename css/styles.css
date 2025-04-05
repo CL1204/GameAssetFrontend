@@ -1,8 +1,10 @@
 ﻿/* =====================
    BASE STYLES 
    ===================== */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Press Start 2P', monospace;
     margin: 0;
     padding: 0;
     background-color: #121212;
@@ -51,14 +53,41 @@ button:disabled {
     }
 
     .auth-container button {
-        background-color: #007bff;
+        background-color: #333;
         color: white;
         border: none;
         cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.1s ease;
     }
 
+        .auth-container button:active {
+            transform: scale(0.96);
+        }
+
+        .auth-container button.clicked::after {
+            content: '✨';
+            position: absolute;
+            top: 0;
+            right: 0;
+            animation: starburst 0.5s ease forwards;
+        }
+
+@keyframes starburst {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-20px, -20px) scale(2);
+    }
+}
+
 .auth-message {
-    font-size: 14px;
+    font-size: 12px;
     margin-top: 10px;
 }
 
@@ -74,73 +103,114 @@ button:disabled {
     color: #66bfff;
     cursor: pointer;
     text-decoration: underline;
+    font-size: 12px;
 }
 
 /* =====================
-   NAVBAR 
+   NAVBAR + NEW LAYOUT
    ===================== */
 .navbar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    background-color: #1e1e1e;
-    color: white;
-    padding: 10px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    background-color: #121212;
+    padding: 16px 32px;
+    border-bottom: 1px solid #222;
 }
 
-.logo a {
-    color: white;
-    text-decoration: none;
-    font-size: 20px;
-    font-weight: bold;
-}
-
-.menu {
+.user-label {
     margin-left: auto;
-    padding-right: 20px;
+    margin-right: 20px;
+    font-size: 12px;
+    color: #ccc;
+    opacity: 0.8;
+    font-family: 'Press Start 2P', monospace;
 }
+
+
+
+.logo {
+    font-size: 22px;
+    color: #f0f0f0;
+    font-family: 'Press Start 2P', monospace;
+    letter-spacing: 1px;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1e1e1e;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 999;
+    border-top: 1px solid #333;
+}
+
+    .bottom-nav button {
+        background: none;
+        border: none;
+        color: #ccc;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+        .bottom-nav button:hover {
+            color: #fff;
+        }
+
+        .bottom-nav button:active {
+            transform: scale(0.95);
+        }
+
+    .bottom-nav .plus-btn {
+        background-color: #ff4757;
+        border-radius: 50%;
+        padding: 14px;
+        font-size: 14px;
+        color: white;
+        box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+        margin-top: -24px;
+    }
 
 /* =====================
-   BUTTONS 
+   OVERRIDES
    ===================== */
 .assets-link,
 .dashboard-link,
 .home-btn,
-.logout-btn {
-    color: white;
-    text-decoration: none;
-    padding: 8px 12px;
-    background-color: #007bff;
-    border-radius: 5px;
-    margin-left: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.logout-btn,
+.category-btn.active {
+    background-color: #333 !important;
 }
 
-.logout-btn {
-    background-color: #dc3545;
-}
-
-    .logout-btn:hover {
-        background-color: #c9302c;
+    .assets-link:hover,
+    .dashboard-link:hover,
+    .home-btn:hover,
+    .logout-btn:hover,
+    .category-btn:not(.active):hover {
+        background-color: #555 !important;
     }
 
-.assets-link:hover,
-.dashboard-link:hover,
-.home-btn:hover {
-    background-color: #0056b3;
+.category-btn.active {
+    color: white !important;
 }
 
-.container {
-    text-align: center;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-    position: relative;
+input,
+textarea,
+select {
+    font-family: 'Arial', sans-serif;
 }
+
+/* Replaces rest of your styles here as needed */
+
 
 /* =====================
    ASSET GRID 
@@ -216,21 +286,31 @@ button:disabled {
 /* =====================
    SEARCH BAR 
    ===================== */
+/* Modern Search Bar Style */
 #searchBar {
-    padding: 10px 15px;
-    border-radius: 20px;
-    border: 1px solid #444;
-    background-color: #2a2a2a;
-    color: #fff;
-    width: 300px;
-    margin-bottom: 20px;
+    padding: 14px 20px;
+    border-radius: 30px;
+    border: 2px solid #444;
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+    width: 350px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    margin-bottom: 25px;
 }
+
+    #searchBar::placeholder {
+        color: #aaa;
+        font-style: italic;
+    }
 
     #searchBar:focus {
         outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 5px rgba(0,123,255,0.5);
+        border-color: #ff4757;
+        box-shadow: 0 0 6px rgba(255, 71, 87, 0.5);
     }
+
 
 /* =====================
    UPLOAD PANEL 
@@ -320,6 +400,29 @@ button:disabled {
     background: rgba(255,255,255,0.1);
     color: #ff4757;
 }
+/* =====================
+   LOGOUT BUTTON (PILL STYLE)
+   ===================== */
+.logout-pill {
+    margin: 30px auto 0;
+    padding: 12px 32px;
+    background-color: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    display: inline-block;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+    transition: all 0.2s ease;
+}
+
+    .logout-pill:hover {
+        background-color: #e84150;
+        transform: scale(1.05);
+    }
+
 
 /* =====================
    CATEGORY NAVIGATION
@@ -368,6 +471,25 @@ button:disabled {
         margin-top: 0;
         color: #fff;
     }
+
+/* =====================
+   DISCOVER SECTION STYLE (Horizontal Scroll)
+   ===================== */
+#discoverSection {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+    #discoverSection .asset-card {
+        min-width: 250px;
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+    }
+
 
 /* =====================
    ADMIN STYLES
