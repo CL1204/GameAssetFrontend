@@ -13,6 +13,7 @@ window.onload = async () => {
 
         setupCategoryButtons();
         showCategory("characters");
+        highlightCategoryButton("characters");
     } catch (err) {
         console.error("Failed to fetch assets:", err);
     }
@@ -59,19 +60,23 @@ function setupCategoryButtons() {
     document.querySelectorAll(".category-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
             e.preventDefault();
-            const category = btn.textContent.trim().toLowerCase();
+            const category = btn.dataset.category;
             showCategory(category);
-            updateCategoryActive(btn);
+            highlightCategoryButton(category);
         });
     });
 }
 
-function updateCategoryActive(clickedElement) {
-    document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
-    clickedElement.classList.add("active");
-
-    clickedElement.classList.add("clicked");
-    setTimeout(() => clickedElement.classList.remove("clicked"), 600);
+function highlightCategoryButton(category) {
+    document.querySelectorAll(".category-btn").forEach(btn => {
+        const btnCategory = btn.dataset.category;
+        if (btnCategory === category) {
+            btn.classList.add("active", "clicked");
+            setTimeout(() => btn.classList.remove("clicked"), 600);
+        } else {
+            btn.classList.remove("active");
+        }
+    });
 }
 
 // ⬇️ SHOW CATEGORY
