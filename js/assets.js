@@ -15,6 +15,15 @@ window.onload = async () => {
     }
 };
 
+document.querySelectorAll(".category-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const category = btn.textContent.trim().toLowerCase();
+        showCategory(category, btn);
+    });
+});
+
+
 function showCategory(category, clickedElement) {
     document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
     clickedElement.classList.add("active");
