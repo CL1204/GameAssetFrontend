@@ -55,9 +55,11 @@ function setupUploadHandler() {
                 uploadForm.reset();
                 toggleUploadPanel();
             } else {
-                const err = await res.text();
-                alert("Upload failed: " + err);
+                const errorText = await res.text();
+                console.error("Upload failed:", errorText);
+                alert("Upload failed: " + errorText); // Show real server error
             }
+
         } catch (error) {
             alert("Upload error: " + error.message);
         }
