@@ -1,47 +1,65 @@
-﻿const BASE_URL = window.location.hostname.includes("localhost")
-    ? "http://localhost:7044"
-    : "https://gameasset-backend-aj1g.onrender.com";
-
-async function injectBottomNav() {
-    const res = await fetch(`${BASE_URL}/api/auth/check-auth`, {
-        credentials: "include"
-    });
-
-    if (!res.ok) {
-        window.location.href = "login.html";
-        return;
-    }
-
-    const user = await res.json();
-
-    // Highlight current page
-    const currentPath = window.location.pathname.split("/").pop();
-
+﻿// Load the bottom nav HTML
+document.addEventListener("DOMContentLoaded", async () => {
     const navHTML = `
-        <nav class="bottom-nav" id="bottomNav">
-            <button ${currentPath === "dashboard.html" ? 'class="active"' : ""} onclick="location.href='dashboard.html'">
-                <span>🏠</span><span>Home</span>
-            </button>
-            <button ${currentPath === "assets.html" ? 'class="active"' : ""} onclick="location.href='assets.html'">
-                <span>📂</span><span>Explore</span>
-            </button>
-            <button class="plus-btn" onclick="toggleUploadPanel()">+</button>
-            <button ${currentPath === "profile.html" ? 'class="active"' : ""} onclick="location.href='profile.html'">
-                <span>👤</span><span>Me</span>
-            </button>
-            ${user.isAdmin ? `
-            <button ${currentPath === "admin.html" ? 'class="active"' : ""} onclick="location.href='admin.html'">
-                <span>🛠️</span><span>Actions</span>
-            </button>` : ""}
-        </nav>
+    <nav class="bottom-nav" id="bottomNav">
+        <button onclick="location.href='dashboard.html'">
+            <span>🏠</span>
+            <span>Home</span>
+        </button>
+        <button onclick="location.href='assets.html'">
+            <span>📂</span>
+            <span>Explore</span>
+        </button>
+        <button class="plus-btn" onclick="toggleUploadPanel()">+</button>
+        <button onclick="location.href='profile.html'">
+            <span>👤</span>
+            <span>Me</span>
+        </button>
+        <button id="adminActionBtn" style="display: none;" onclick="location.href='admin.html'">
+            <span>🛠️</span>
+            <span>Actions</span>
+        </button>
+    </nav>
     `;
-
     document.getElementById("bottomNavContainer").innerHTML = navHTML;
 
-    // Optional: mark admin badge if available
-    if (user.isAdmin && document.getElementById("adminBadge")) {
-        document.getElementById("adminBadge").style.display = "inline";
-    }
-}
+    // Highlight active page
+    const current = window.location.pathname;
+    document.querySelectorAll(".bottom-nav button").forEach(btn => {
+        if (btn.innerText.toLowerCase().includes(current.replace(".html", "").replace("/", ""))) {
+            btn.classList.add("active");
+        }
+    });
 
-injectBottomNav();
+    // Show admin Actions tab if user is admin
+    try {
+        const BASE_URL = window.location.hostname.includes("localhost")
+            ? "http://localhost:7044"
+            : "https://gameasset-backend-aj1g.onrender.com";
+
+        const res = await fetch(`${BASE_URL}/api/auth/check-auth`, {
+            credentials: "include",
+        });
+
+        if (res.ok) {
+            const user = await res.json();
+            if (user.isAdmin) {
+                document.getElementById("adminActionBtn").style.display = "inline-block";
+            }
+        }
+    } catch (err) {
+        console.error("Auth check failed in bottom-nav.js", err);
+    }
+});
+
+// ✅ Global fallback for toggleUploadPanel if not defined on current page
+if (typeof toggleUploadPanel !== "function") {
+    window.toggleUploadPanel = () => {
+        const panel = document.getElementById("uploadPanel");
+        if (panel) {
+            panel.style.display = panel.style.display === "none" ? "block" : "none";
+        } else {
+            console.warn("No upload panel found on this page.");
+        }
+    };
+}
