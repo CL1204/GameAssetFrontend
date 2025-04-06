@@ -10,55 +10,62 @@ window.onload = async () => {
         allAssets = await res.json();
         displayAssets(allAssets);
         setupSearch(allAssets);
-
         setupCategoryButtons();
         showCategory("characters");
         highlightCategoryButton("characters");
     } catch (err) {
         console.error("Failed to fetch assets:", err);
     }
+
+    setupUploadHandler();
 };
 
-// ⬇️ UPLOAD LOGIC
-document.getElementById("uploadForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const file = document.getElementById("assetFile").files[0];
-    const title = document.getElementById("assetName").value;
-    const category = document.getElementById("assetCategory").value;
-    const description = document.getElementById("assetDescription").value;
-    const tags = document.getElementById("tagInput").value.split(",").map(t => t.trim()).filter(Boolean);
+function setupUploadHandler() {
+    const uploadForm = document.getElementById("uploadForm");
+    uploadForm?.addEventListener("submit", async e => {
+        e.preventDefault();
+        const file = document.getElementById("assetFile").files[0];
+        const title = document.getElementById("assetName").value;
+        const category = document.getElementById("assetCategory").value;
+        const description = document.getElementById("assetDescription").value;
+        const tags = document.getElementById("tagInput").value.split(",").map(t => t.trim()).filter(Boolean);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("category", category);
-    tags.forEach(tag => formData.append("tags", tag));
-
-    try {
-        const res = await fetch(`${BASE_URL}/api/assets/upload`, {
-            method: "POST",
-            body: formData,
-            credentials: "include"
-        });
-
-        if (res.ok) {
-            alert("Upload successful! Awaiting admin approval.");
-            e.target.reset();
-            toggleUploadPanel();
-        } else {
-            const err = await res.text();
-            alert("Upload failed: " + err);
+        if (!file || !title || !category) {
+            alert("Please complete the form.");
+            return;
         }
-    } catch (error) {
-        alert("Upload error: " + error.message);
-    }
-});
 
-// ⬇️ CATEGORY BUTTONS
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("title", title);
+        formData.append("description", description);
+        formData.append("category", category);
+        tags.forEach(tag => formData.append("tags", tag));
+
+        try {
+            const res = await fetch(`${BASE_URL}/api/assets/upload`, {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            });
+
+            if (res.ok) {
+                alert("Upload successful! Awaiting admin approval.");
+                uploadForm.reset();
+                toggleUploadPanel();
+            } else {
+                const err = await res.text();
+                alert("Upload failed: " + err);
+            }
+        } catch (error) {
+            alert("Upload error: " + error.message);
+        }
+    });
+}
+
 function setupCategoryButtons() {
     document.querySelectorAll(".category-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
+        btn.addEventListener("click", e => {
             e.preventDefault();
             const category = btn.dataset.category;
             showCategory(category);
@@ -69,8 +76,7 @@ function setupCategoryButtons() {
 
 function highlightCategoryButton(category) {
     document.querySelectorAll(".category-btn").forEach(btn => {
-        const btnCategory = btn.dataset.category;
-        if (btnCategory === category) {
+        if (btn.dataset.category === category) {
             btn.classList.add("active", "clicked");
             setTimeout(() => btn.classList.remove("clicked"), 600);
         } else {
@@ -79,17 +85,14 @@ function highlightCategoryButton(category) {
     });
 }
 
-// ⬇️ SHOW CATEGORY
 function showCategory(category) {
     document.querySelectorAll(".asset-section").forEach(section => section.classList.remove("active"));
     const section = document.getElementById(`${category}-section`);
     if (section) section.classList.add("active");
-
     document.getElementById("searchBar").value = "";
     searchAssets(category);
 }
 
-// ⬇️ DISPLAY ALL ASSETS
 function displayAssets(assets) {
     const categories = {
         characters: document.getElementById("characters"),
@@ -115,7 +118,6 @@ function displayAssets(assets) {
     });
 }
 
-// ⬇️ SEARCH
 function setupSearch(assets) {
     const input = document.getElementById("searchBar");
     input.addEventListener("input", () => {
@@ -152,7 +154,6 @@ function setupSearch(assets) {
     });
 }
 
-// ⬇️ LIKE LOGIC
 async function likeAsset(id, button) {
     try {
         const res = await fetch(`${BASE_URL}/api/assets/${id}/like`, {
@@ -170,7 +171,6 @@ async function likeAsset(id, button) {
     }
 }
 
-// ⬇️ DOWNLOAD LOGIC
 async function downloadAsset(id, fileUrl) {
     try {
         await fetch(`${BASE_URL}/api/assets/${id}/download`, {
@@ -183,7 +183,6 @@ async function downloadAsset(id, fileUrl) {
     }
 }
 
-// ⬇️ Toggle Upload Modal
 function toggleUploadPanel() {
     const panel = document.getElementById("uploadPanel");
     panel.style.display = panel.style.display === "none" ? "block" : "none";
