@@ -10,7 +10,7 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="logo">
-            Game Asset Storage
+            GameAssetStorage
             <span class="admin-badge" id="adminBadge" style="display: none;">Admin</span>
         </div>
         <span id="userLabel" class="user-label"></span>
@@ -70,22 +70,5 @@
 
 
     <script src="js/assets.js"></script>
-    <script>
-        // Inject Actions button if admin
-        fetch("https://gameasset-backend-aj1g.onrender.com/api/auth/check-auth", { credentials: "include" })
-            .then(res => res.ok ? res.json() : null)
-            .then(user => {
-                if (user?.isAdmin) {
-                    const btn = document.createElement("button");
-                    btn.innerHTML = `<span>🛠️</span><span>Actions</span>`;
-                    btn.onclick = () => location.href = 'admin.html';
-                    document.getElementById("bottomNav").insertBefore(btn, document.querySelector(".plus-btn").nextSibling);
-                    document.getElementById("adminBadge").style.display = "inline";
-                }
-                if (user?.username) {
-                    document.getElementById("userLabel").textContent = user.username;
-                }
-            });
-    </script>
-</body>
+    
 </html>
