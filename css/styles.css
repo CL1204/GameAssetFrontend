@@ -557,8 +557,10 @@ select {
     }
 
     .category-btn.active {
-        background-color: #007bff !important;
+        background-color: #ff4757 !important;
+        color: white !important;
     }
+
 
 /* =====================
    DASHBOARD SECTIONS
