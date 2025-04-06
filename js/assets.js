@@ -7,6 +7,7 @@ let allAssets = [];
 window.onload = async () => {
     try {
         const res = await fetch(`${BASE_URL}/api/assets/approved`);
+        if (!res.ok) throw new Error("Failed to load assets");
         allAssets = await res.json();
         displayAssets(allAssets);
         setupSearch(allAssets);
