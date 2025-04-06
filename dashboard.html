@@ -63,39 +63,10 @@
         </form>
     </div>
 
-    <!-- Bottom Nav Bar -->
-    <nav class="bottom-nav" id="bottomNav">
-        <button onclick="location.href='dashboard.html'">
-            <span>🏠</span>
-            <span>Home</span>
-        </button>
-        <button onclick="location.href='assets.html'">
-            <span>📂</span>
-            <span>Explore</span>
-        </button>
-        <button class="plus-btn" onclick="toggleUploadPanel()">
-            +
-        </button>
-        <button onclick="location.href='profile.html'">
-            <span>👤</span>
-            <span>Me</span>
-        </button>
-    </nav>
+    <!-- ✅ Reusable Bottom Nav Injected Here -->
+    <nav id="bottomNavContainer"></nav>
+    <script src="js/bottom-nav.js"></script>
 
     <script src="js/dashboard.js"></script>
-    <script>
-        // Inject admin Actions button if user is admin
-        fetch("https://gameasset-backend-aj1g.onrender.com/api/auth/check-auth", { credentials: "include" })
-            .then(res => res.ok ? res.json() : null)
-            .then(user => {
-                if (user?.isAdmin) {
-                    const btn = document.createElement("button");
-                    btn.innerHTML = `<span>🛠️</span><span>Actions</span>`;
-                    btn.onclick = () => location.href = 'admin.html';
-                    document.getElementById("bottomNav").insertBefore(btn, document.querySelector(".plus-btn").nextSibling);
-                    document.getElementById("adminBadge").style.display = "inline";
-                }
-            });
-    </script>
 </body>
 </html>

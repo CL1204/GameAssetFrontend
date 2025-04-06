@@ -19,7 +19,6 @@
 
     <!-- Admin Main Sections -->
     <div class="container admin-container">
-        <!-- Pending Section -->
         <div class="admin-section" id="pendingSection">
             <h2>Pending Approval</h2>
             <table class="admin-table">
@@ -68,28 +67,9 @@
     </div>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
-        <button onclick="location.href='dashboard.html'">
-            <span>🏠</span>
-            <span>Home</span>
-        </button>
-        <button onclick="location.href='assets.html'">
-            <span>📂</span>
-            <span>Explore</span>
-        </button>
-        <button class="plus-btn" onclick="location.href='admin.html'">
-            +
-        </button>
-        <button onclick="toggleAdminTab('pending')">
-            <span>🛠️</span>
-            <span>Actions</span>
-        </button>
-        <button onclick="toggleAdminTab('users')">
-            <span>👥</span>
-            <span>Users</span>
-        </button>
-        <button class="logout-pill" onclick="logout()">Logout</button>
-    </nav>
+    <nav id="bottomNavContainer"></nav>
+    <script src="js/bottom-nav.js"></script>
+
 
     <script src="js/admin.js"></script>
 </body>
