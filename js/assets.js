@@ -8,7 +8,8 @@ window.onload = async () => {
         const assets = await res.json();
         displayAssets(assets);
         setupSearch(assets);
-        showCategory("characters", document.querySelector(".category-btn.active"));
+        const defaultBtn = document.querySelector(".category-btn.active");
+        if (defaultBtn) showCategory("characters", defaultBtn);
     } catch (err) {
         console.error("Failed to fetch assets:", err);
     }
@@ -18,12 +19,17 @@ function showCategory(category, clickedElement) {
     document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
     clickedElement.classList.add("active");
 
+    // Add clicked animation
+    clickedElement.classList.add("clicked");
+    setTimeout(() => clickedElement.classList.remove("clicked"), 600); // match animation duration
+
     document.querySelectorAll(".asset-section").forEach(section => section.classList.remove("active"));
-    document.getElementById(`${category}-section`).classList.add("active");
+    const section = document.getElementById(`${category}-section`);
+    if (section) section.classList.add("active");
 
     document.getElementById("searchBar").value = "";
-    searchAssets(category);
 }
+
 
 function displayAssets(assets) {
     const categories = {

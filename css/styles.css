@@ -237,11 +237,51 @@ button:disabled {
     color: white !important;
 }
 
+/* Starburst effect on category buttons */
+.category-btn {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+    .category-btn.clicked::before,
+    .category-btn.clicked::after {
+        content: "✨";
+        position: absolute;
+        opacity: 1;
+        animation: starburst 0.6s ease-out forwards;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    .category-btn.clicked::before {
+        left: -18px;
+        top: 5px;
+    }
+
+    .category-btn.clicked::after {
+        right: -18px;
+        top: 5px;
+    }
+
+@keyframes starburst {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(2) translateY(-10px);
+    }
+}
+
 input,
 textarea,
 select {
     font-family: 'Arial', sans-serif;
 }
+
+
 
 /* Replaces rest of your styles here as needed */
 
