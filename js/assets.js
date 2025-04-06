@@ -2,36 +2,89 @@
     ? "http://localhost:7044"
     : "https://gameasset-backend-aj1g.onrender.com";
 
+let allAssets = [];
+
 window.onload = async () => {
     try {
         const res = await fetch(`${BASE_URL}/api/assets/approved`);
-        const assets = await res.json();
-        displayAssets(assets);
-        setupSearch(assets);
+        allAssets = await res.json();
+        displayAssets(allAssets);
+        setupSearch(allAssets);
 
-        // Show default category
-        const defaultBtn = document.querySelector(".category-btn.active");
-        if (defaultBtn) showCategory("characters", defaultBtn);
+        setupCategoryButtons();
+        showCategory("characters");
     } catch (err) {
         console.error("Failed to fetch assets:", err);
     }
 };
 
-function showCategory(category, clickedElement) {
+// ⬇️ UPLOAD LOGIC
+document.getElementById("uploadForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const file = document.getElementById("assetFile").files[0];
+    const title = document.getElementById("assetName").value;
+    const category = document.getElementById("assetCategory").value;
+    const description = document.getElementById("assetDescription").value;
+    const tags = document.getElementById("tagInput").value.split(",").map(t => t.trim()).filter(Boolean);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    tags.forEach(tag => formData.append("tags", tag));
+
+    try {
+        const res = await fetch(`${BASE_URL}/api/assets/upload`, {
+            method: "POST",
+            body: formData,
+            credentials: "include"
+        });
+
+        if (res.ok) {
+            alert("Upload successful! Awaiting admin approval.");
+            e.target.reset();
+            toggleUploadPanel();
+        } else {
+            const err = await res.text();
+            alert("Upload failed: " + err);
+        }
+    } catch (error) {
+        alert("Upload error: " + error.message);
+    }
+});
+
+// ⬇️ CATEGORY BUTTONS
+function setupCategoryButtons() {
+    document.querySelectorAll(".category-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const category = btn.textContent.trim().toLowerCase();
+            showCategory(category);
+            updateCategoryActive(btn);
+        });
+    });
+}
+
+function updateCategoryActive(clickedElement) {
     document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
     clickedElement.classList.add("active");
 
-    // Starburst animation
     clickedElement.classList.add("clicked");
     setTimeout(() => clickedElement.classList.remove("clicked"), 600);
+}
 
+// ⬇️ SHOW CATEGORY
+function showCategory(category) {
     document.querySelectorAll(".asset-section").forEach(section => section.classList.remove("active"));
     const section = document.getElementById(`${category}-section`);
     if (section) section.classList.add("active");
 
     document.getElementById("searchBar").value = "";
+    searchAssets(category);
 }
 
+// ⬇️ DISPLAY ALL ASSETS
 function displayAssets(assets) {
     const categories = {
         characters: document.getElementById("characters"),
@@ -45,7 +98,7 @@ function displayAssets(assets) {
         card.className = "asset-card";
         card.innerHTML = `
             <button class="favorite-btn" onclick="likeAsset(${asset.id}, this)">
-                ♥ <span class="favorite-count">${asset.likes}</span>
+              ♥ <span class="favorite-count">${asset.likes}</span>
             </button>
             <img src="${asset.imageUrl}" alt="${asset.title}" onerror="this.src='placeholder.jpg'" />
             <h4>${asset.title}</h4>
@@ -57,6 +110,7 @@ function displayAssets(assets) {
     });
 }
 
+// ⬇️ SEARCH
 function setupSearch(assets) {
     const input = document.getElementById("searchBar");
     input.addEventListener("input", () => {
@@ -80,7 +134,7 @@ function setupSearch(assets) {
             card.className = "asset-card";
             card.innerHTML = `
                 <button class="favorite-btn" onclick="likeAsset(${asset.id}, this)">
-                    ♥ <span class="favorite-count">${asset.likes}</span>
+                  ♥ <span class="favorite-count">${asset.likes}</span>
                 </button>
                 <img src="${asset.imageUrl}" alt="${asset.title}" onerror="this.src='placeholder.jpg'" />
                 <h4>${asset.title}</h4>
@@ -93,6 +147,7 @@ function setupSearch(assets) {
     });
 }
 
+// ⬇️ LIKE LOGIC
 async function likeAsset(id, button) {
     try {
         const res = await fetch(`${BASE_URL}/api/assets/${id}/like`, {
@@ -110,6 +165,7 @@ async function likeAsset(id, button) {
     }
 }
 
+// ⬇️ DOWNLOAD LOGIC
 async function downloadAsset(id, fileUrl) {
     try {
         await fetch(`${BASE_URL}/api/assets/${id}/download`, {
@@ -122,39 +178,8 @@ async function downloadAsset(id, fileUrl) {
     }
 }
 
+// ⬇️ Toggle Upload Modal
 function toggleUploadPanel() {
     const panel = document.getElementById("uploadPanel");
     panel.style.display = panel.style.display === "none" ? "block" : "none";
 }
-
-// ✅ Upload logic
-document.getElementById("uploadForm")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const file = document.getElementById("assetFile").files[0];
-    const title = document.getElementById("assetName").value;
-    const category = document.getElementById("assetCategory").value;
-    const description = document.getElementById("assetDescription").value;
-    const tags = document.getElementById("tagInput").value.split(",").map(tag => tag.trim());
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("category", category);
-    tags.forEach(tag => formData.append("tags", tag));
-
-    const res = await fetch(`${BASE_URL}/api/assets/upload`, {
-        method: "POST",
-        credentials: "include",
-        body: formData
-    });
-
-    if (res.ok) {
-        alert("Upload successful! Awaiting approval.");
-        document.getElementById("uploadForm").reset();
-        toggleUploadPanel();
-    } else {
-        alert("Upload failed.");
-    }
-});
