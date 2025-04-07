@@ -34,20 +34,21 @@ function logout() {
     });
 }
 
-// Load pending assets
+// ✅ Load pending assets from server
 async function loadPendingAssets() {
     try {
-        const res = await fetch(`${API_BASE_URL}/assets/pending`, {
+        const res = await fetch(`${API_BASE_URL}/assets/pending-assets`, {
             credentials: "include"
         });
 
-        const assets = await res.json();
-        renderPendingAssets(assets);
+        const pendingAssets = await res.json();
+        renderPendingAssets(pendingAssets);
     } catch (err) {
         console.error("Failed to load pending assets:", err);
     }
 }
 
+// ✅ Render assets with image preview
 function renderPendingAssets(assets) {
     const tbody = document.getElementById("pendingAssets");
     tbody.innerHTML = "";
@@ -60,7 +61,9 @@ function renderPendingAssets(assets) {
     assets.forEach(asset => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${asset.title}</td>
+            <td>
+                <img src="${asset.imageUrl}" alt="${asset.title}" style="height: 60px; border-radius: 8px; cursor: pointer;" onclick="showAssetModal('${asset.imageUrl}', '${asset.title}', \`${asset.description}\`)">
+            </td>
             <td>${asset.category}</td>
             <td>${asset.username || "Unknown"}</td>
             <td>${new Date(asset.createdAt).toLocaleDateString()}</td>
@@ -73,7 +76,20 @@ function renderPendingAssets(assets) {
     });
 }
 
-// Approve / Reject asset
+
+// Modal logic
+function showAssetModal(imageUrl, title, description) {
+    document.getElementById("modalAssetTitle").textContent = title;
+    document.getElementById("modalAssetImage").src = imageUrl;
+    document.getElementById("modalAssetDescription").textContent = description;
+    document.getElementById("assetModal").style.display = "block";
+}
+
+function closeAssetModal() {
+    document.getElementById("assetModal").style.display = "none";
+}
+
+// Approve asset
 async function approveAsset(id) {
     if (!confirm("Approve this asset?")) return;
 
@@ -90,6 +106,7 @@ async function approveAsset(id) {
     }
 }
 
+// Reject asset
 async function rejectAsset(id) {
     if (!confirm("Reject this asset? This cannot be undone.")) return;
 
@@ -104,4 +121,15 @@ async function rejectAsset(id) {
     } else {
         alert("Failed to reject asset.");
     }
+}
+
+function showAssetModal(imageUrl, title, description) {
+    document.getElementById("modalAssetImage").src = imageUrl;
+    document.getElementById("modalAssetTitle").textContent = title;
+    document.getElementById("modalAssetDescription").textContent = description;
+    document.getElementById("assetModal").style.display = "block";
+}
+
+function closeAssetModal() {
+    document.getElementById("assetModal").style.display = "none";
 }

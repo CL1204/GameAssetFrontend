@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // Show admin Actions tab if user is admin
+    // ✅ Always run auth check to reveal admin button if admin
     try {
         const BASE_URL = window.location.hostname.includes("localhost")
             ? "http://localhost:7044"
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// ✅ Global fallback for toggleUploadPanel if not defined on current page
+// ✅ Global fallback for toggleUploadPanel
 if (typeof toggleUploadPanel !== "function") {
     window.toggleUploadPanel = () => {
         const panel = document.getElementById("uploadPanel");

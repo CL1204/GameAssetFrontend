@@ -4,6 +4,7 @@
 
 let allAssets = [];
 let allUsernames = [];
+let currentUser = null;
 
 window.onload = async function () {
     const auth = await fetch(`${BASE_URL}/api/auth/check-auth`, { credentials: "include" });
@@ -12,14 +13,10 @@ window.onload = async function () {
     const data = await auth.json();
     localStorage.setItem("username", data.username);
     document.getElementById("userLabel").textContent = data.username;
+    currentUser = data;
 
     if (data.isAdmin) {
         document.getElementById("adminBadge").style.display = "inline";
-        const nav = document.querySelector(".bottom-nav");
-        const btn = document.createElement("button");
-        btn.innerHTML = `<span>🛠️</span><span>Actions</span>`;
-        btn.onclick = () => location.href = "admin.html";
-        nav.insertBefore(btn, nav.querySelector(".plus-btn").nextSibling);
     }
 
     loadAssets();
@@ -91,6 +88,29 @@ function createAssetCard(asset) {
         <p>${asset.description}</p>
         <small>Tags: ${asset.tags?.join(", ") || "None"}</small>
     `;
+
+    if (currentUser?.isAdmin || currentUser?.userId == asset.userId) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "−";
+        deleteBtn.className = "delete-btn";
+        deleteBtn.title = "Delete asset";
+        deleteBtn.onclick = async () => {
+            const confirmDelete = confirm("Are you sure you want to delete this asset?");
+            if (!confirmDelete) return;
+            const res = await fetch(`${BASE_URL}/api/assets/${asset.id}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+            if (res.ok) {
+                alert("Asset deleted.");
+                loadAssets();
+            } else {
+                alert("Failed to delete asset.");
+            }
+        };
+        card.appendChild(deleteBtn);
+    }
+
     return card;
 }
 
@@ -108,7 +128,6 @@ function toggleUploadPanel() {
     panel.style.display = panel.style.display === "none" ? "block" : "none";
 }
 
-// Fetch all usernames for search suggestions
 async function fetchAllUsernames() {
     try {
         const res = await fetch(`${BASE_URL}/admin/users`, { credentials: "include" });
@@ -119,7 +138,6 @@ async function fetchAllUsernames() {
     }
 }
 
-// Search bar functionality
 document.getElementById("searchBar").addEventListener("input", () => {
     const query = document.getElementById("searchBar").value.toLowerCase().trim();
     const discover = document.getElementById("discoverSection");
@@ -134,7 +152,6 @@ document.getElementById("searchBar").addEventListener("input", () => {
         return;
     }
 
-    // Search assets by title or tag
     const filteredAssets = allAssets.filter(asset =>
         asset.title.toLowerCase().includes(query) ||
         asset.tags?.some(tag => tag.toLowerCase().includes(query))
@@ -144,7 +161,6 @@ document.getElementById("searchBar").addEventListener("input", () => {
         discover.appendChild(createAssetCard(asset));
     });
 
-    // Search usernames
     const matchedUser = allUsernames.find(u => u.includes(query));
     if (matchedUser) {
         const userResult = document.createElement("div");

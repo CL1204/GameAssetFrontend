@@ -3,19 +3,25 @@
     : "https://gameasset-backend-aj1g.onrender.com";
 
 let allAssets = [];
+let currentUser = null;
 
 window.onload = async () => {
     try {
+        const authRes = await fetch(`${BASE_URL}/api/auth/check-auth`, { credentials: "include" });
+        if (!authRes.ok) throw new Error("Unauthorized");
+        currentUser = await authRes.json();
+
         const res = await fetch(`${BASE_URL}/api/assets/approved`);
         if (!res.ok) throw new Error("Failed to load assets");
         allAssets = await res.json();
+
         displayAssets(allAssets);
         setupSearch(allAssets);
         setupCategoryButtons();
         showCategory("characters");
         highlightCategoryButton("characters");
     } catch (err) {
-        console.error("Failed to fetch assets:", err);
+        console.error("Failed to fetch assets or auth:", err);
     }
 
     setupUploadHandler();
@@ -57,7 +63,7 @@ function setupUploadHandler() {
             } else {
                 const errorText = await res.text();
                 console.error("Upload failed:", errorText);
-                alert("Upload failed: " + errorText); // Show real server error
+                alert("Upload failed: " + errorText);
             }
 
         } catch (error) {
@@ -117,6 +123,20 @@ function displayAssets(assets) {
             <small>Tags: ${asset.tags?.join(", ") || "None"}</small>
             <a class="download-btn" href="#" onclick="downloadAsset(${asset.id}, '${asset.fileUrl}'); return false;">Download</a>
         `;
+
+        if (currentUser?.isAdmin || currentUser?.userId === asset.userId) {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "−";
+            deleteBtn.className = "delete-btn";
+            deleteBtn.title = "Delete Asset";
+            deleteBtn.onclick = () => {
+                if (confirm("Are you sure you want to delete this asset?")) {
+                    deleteAsset(asset.id);
+                }
+            };
+            card.appendChild(deleteBtn);
+        }
+
         categories[asset.category]?.appendChild(card);
     });
 }
@@ -152,6 +172,20 @@ function setupSearch(assets) {
                 <small>Tags: ${asset.tags?.join(", ") || "None"}</small>
                 <a class="download-btn" href="#" onclick="downloadAsset(${asset.id}, '${asset.fileUrl}'); return false;">Download</a>
             `;
+
+            if (currentUser?.isAdmin || currentUser?.userId === asset.userId) {
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "−";
+                deleteBtn.className = "delete-btn";
+                deleteBtn.title = "Delete Asset";
+                deleteBtn.onclick = () => {
+                    if (confirm("Are you sure you want to delete this asset?")) {
+                        deleteAsset(asset.id);
+                    }
+                };
+                card.appendChild(deleteBtn);
+            }
+
             container.appendChild(card);
         });
     });
@@ -183,6 +217,23 @@ async function downloadAsset(id, fileUrl) {
         window.open(fileUrl, "_blank");
     } catch (err) {
         console.error("Download error:", err);
+    }
+}
+
+async function deleteAsset(id) {
+    try {
+        const res = await fetch(`${BASE_URL}/api/assets/${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        });
+        if (res.ok) {
+            alert("Asset deleted.");
+            window.location.reload();
+        } else {
+            alert("Failed to delete asset.");
+        }
+    } catch (err) {
+        console.error("Error deleting asset:", err);
     }
 }
 
