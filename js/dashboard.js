@@ -79,17 +79,27 @@ function displayDiscover(assets) {
 function createAssetCard(asset) {
     const card = document.createElement("div");
     card.className = "asset-card";
+
+    const img = document.createElement("img");
+    img.src = asset.imageUrl;
+    img.alt = asset.title;
+    img.onerror = function () {
+        this.onerror = null;
+        this.src = "https://res.cloudinary.com/demo/image/upload/v1690000000/default-placeholder.png"; // fallback
+    };
+
     card.innerHTML = `
         <button class="favorite-btn" onclick="likeAsset(${asset.id}, event)">
-          ♥ <span class="favorite-count">${asset.likes}</span>
+            ♥ <span class="favorite-count">${asset.likes}</span>
         </button>
-        <img src="${asset.imageUrl}" alt="${asset.title}" onerror="this.src='placeholder.jpg'" />
         <h4>${asset.title}</h4>
         <p>${asset.description}</p>
         <small>Tags: ${asset.tags?.join(", ") || "None"}</small>
     `;
 
-    if (currentUser?.isAdmin || currentUser?.userId == asset.userId) {
+    card.prepend(img);
+
+    if (currentUser?.isAdmin || currentUser?.userId === asset.userId) {
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "−";
         deleteBtn.className = "delete-btn";
@@ -120,7 +130,13 @@ async function likeAsset(id, event) {
         method: "POST",
         credentials: "include"
     });
-    if (res.ok) loadAssets();
+
+    if (res.ok) {
+        loadAssets();
+    } else {
+        const err = await res.json();
+        alert(err.message || "Failed to like asset.");
+    }
 }
 
 function toggleUploadPanel() {
